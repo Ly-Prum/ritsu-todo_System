@@ -8,7 +8,7 @@ const DEBOUNCE_MS = 2000
 
 export default function SupabaseSync() {
   const initialized = useRef(false)
-  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
     if (!supabase) return
