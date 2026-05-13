@@ -16,8 +16,10 @@ interface AppStore extends AppData {
   freeNote: string
   language: Lang
   sidebarIcon: string
+  bgImage: string
   setLanguage: (lang: Lang) => void
   setSidebarIcon: (url: string) => void
+  setBgImage: (url: string) => void
 
   // Subjects
   addSubject: (subject: Omit<Subject, 'id'>) => void
@@ -49,6 +51,7 @@ interface AppStore extends AppData {
   addLink: (link: Omit<LinkItem, 'id'>) => void
   updateLink: (id: string, updates: Partial<LinkItem>) => void
   deleteLink: (id: string) => void
+  clearLinks: () => void
 
   // QuickTodos
   addQuickTodo: (text: string) => void
@@ -106,8 +109,10 @@ export const useStore = create<AppStore>()(
       freeNote: '',
       language: 'ja' as Lang,
       sidebarIcon: '',
+      bgImage: '',
       setLanguage: (lang) => set({ language: lang }),
       setSidebarIcon: (url) => set({ sidebarIcon: url }),
+      setBgImage: (url) => set({ bgImage: url }),
 
       addSubject: (subject) => set((s) => ({ subjects: [...s.subjects, { ...subject, id: generateId() }] })),
       updateSubject: (id, updates) => set((s) => ({ subjects: s.subjects.map((x) => x.id === id ? { ...x, ...updates } : x) })),
@@ -133,6 +138,7 @@ export const useStore = create<AppStore>()(
       addLink: (link) => set((s) => ({ links: [...s.links, { ...link, id: generateId() }] })),
       updateLink: (id, updates) => set((s) => ({ links: s.links.map((x) => x.id === id ? { ...x, ...updates } : x) })),
       deleteLink: (id) => set((s) => ({ links: s.links.filter((x) => x.id !== id) })),
+      clearLinks: () => set({ links: [] }),
 
       addQuickTodo: (text) => set((s) => ({ quickTodos: [...s.quickTodos, { id: generateId(), text, completed: false, createdAt: now() }] })),
       updateQuickTodo: (id, updates) => set((s) => ({ quickTodos: s.quickTodos.map((x) => x.id === id ? { ...x, ...updates } : x) })),

@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const { language, setLanguage } = store
   const fileRef = useRef<HTMLInputElement>(null)
   const iconRef = useRef<HTMLInputElement>(null)
+  const bgRef = useRef<HTMLInputElement>(null)
   const [importMsg, setImportMsg] = useState('')
   const [showSubjectManager, setShowSubjectManager] = useState(false)
   const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string; teacher: string } | null>(null)
@@ -44,13 +45,22 @@ export default function SettingsPage() {
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
 
-  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon } = store
+  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = (ev) => setSidebarIcon(ev.target?.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  function handleBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => setBgImage(ev.target?.result as string)
     reader.readAsDataURL(file)
     e.target.value = ''
   }
@@ -155,7 +165,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 760 }}>
+    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 24px' }}>{t('set_title')}</h1>
 
       {/* 言語設定 */}
@@ -206,6 +216,33 @@ export default function SettingsPage() {
           </div>
         </div>
         <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '10px 0 0' }}>PNG・JPG・GIF など画像ファイルを設定できます。</p>
+      </div>
+
+      {/* 背景画像 */}
+      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+        <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🌄 背景画像</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{
+            width: 96, height: 60, borderRadius: 10, overflow: 'hidden', flexShrink: 0,
+            background: bgImage ? `url(${bgImage}) center/cover` : 'var(--surface-2)',
+            border: '1px solid var(--border)', position: 'relative',
+          }}>
+            {bgImage && <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,8,11,0.72)' }} />}
+            {!bgImage && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🖼️</span>}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button className="btn-primary" onClick={() => bgRef.current?.click()} style={{ fontSize: 13 }}>
+              画像をアップロード
+            </button>
+            {bgImage && (
+              <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444' }}>
+                背景を削除
+              </button>
+            )}
+            <input ref={bgRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
+          </div>
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '10px 0 0' }}>設定した画像に暗めのフィルターをかけて表示します。</p>
       </div>
 
       {/* Stats */}
