@@ -32,14 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body style={{ margin: 0, minHeight: '100vh' }}>
+      <body style={{ margin: 0, minHeight: '100vh', background: 'transparent' }}>
         <BackgroundProvider />
         <SupabaseSync />
         <NotificationInit />
         <AlarmManager />
-        <div style={{ display: 'flex', minHeight: '100vh', position: 'relative', zIndex: 2, background: 'transparent' }}>
+        <div style={{ display: 'flex', minHeight: '100vh' }}>
           <Sidebar />
-          <main style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
+          <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', position: 'relative', zIndex: 10 }}>
             {children}
           </main>
           <BottomNav />
