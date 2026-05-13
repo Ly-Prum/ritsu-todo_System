@@ -32,7 +32,7 @@ export default function BackgroundProvider() {
           top: 0, left: 0,
           width: '100%', height: '100%',
           objectFit: 'cover',
-          objectPosition: 'center',
+          objectPosition: isMobile ? 'center' : 'calc(50% + 110px) center',
           zIndex: 0,
           pointerEvents: 'none',
         }}
