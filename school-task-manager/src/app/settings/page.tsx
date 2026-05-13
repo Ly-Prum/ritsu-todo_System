@@ -246,29 +246,26 @@ export default function SettingsPage() {
       {/* 背景画像 */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🌄 背景画像</h2>
-        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          {/* PC用 */}
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-muted)' }}>💻 PC用（横型）</div>
+        {typeof window !== 'undefined' && window.innerWidth >= 768 ? (
+          <div>
             <div style={{ width: 96, height: 60, borderRadius: 8, overflow: 'hidden', background: bgImage ? `url(${bgImage}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 8 }}>
               {!bgImage && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🖼️</span>}
             </div>
-            <button className="btn-primary" onClick={() => bgRef.current?.click()} style={{ fontSize: 13, width: '100%', marginBottom: 6 }}>アップロード</button>
-            {bgImage && <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444', width: '100%' }}>削除</button>}
+            <button className="btn-primary" onClick={() => bgRef.current?.click()} style={{ fontSize: 13, marginBottom: 6, marginRight: 8 }}>アップロード</button>
+            {bgImage && <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
             <input ref={bgRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
           </div>
-          {/* スマホ用 */}
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-muted)' }}>📱 スマホ用（縦型）</div>
+        ) : (
+          <div>
             <div style={{ width: 40, height: 60, borderRadius: 8, overflow: 'hidden', background: bgImageMobile ? `url(${bgImageMobile}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 8 }}>
               {!bgImageMobile && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🖼️</span>}
             </div>
-            <button className="btn-primary" onClick={() => bgMobileRef.current?.click()} style={{ fontSize: 13, width: '100%', marginBottom: 6 }}>アップロード</button>
-            {bgImageMobile && <button className="btn-ghost" onClick={() => setBgImageMobile('')} style={{ fontSize: 12, color: '#ef4444', width: '100%' }}>削除</button>}
+            <button className="btn-primary" onClick={() => bgMobileRef.current?.click()} style={{ fontSize: 13, marginBottom: 6, marginRight: 8 }}>アップロード</button>
+            {bgImageMobile && <button className="btn-ghost" onClick={() => setBgImageMobile('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
             <input ref={bgMobileRef} type="file" accept="image/*" onChange={handleBgMobileUpload} style={{ display: 'none' }} />
           </div>
-        </div>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '12px 0 0' }}>自動で圧縮します。PCとスマホで別々に設定できます。</p>
+        )}
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '12px 0 0' }}>自動で圧縮します。このデバイス用の背景を設定できます。</p>
       </div>
 
       {/* Stats */}
