@@ -12,13 +12,11 @@ export default function BackgroundProvider() {
       html.style.backgroundSize = 'cover'
       html.style.backgroundPosition = 'center'
       html.style.backgroundRepeat = 'no-repeat'
-      html.style.backgroundAttachment = 'fixed'
     } else {
       html.style.backgroundImage = ''
       html.style.backgroundSize = ''
       html.style.backgroundPosition = ''
       html.style.backgroundRepeat = ''
-      html.style.backgroundAttachment = ''
     }
   }, [bgImage])
 
