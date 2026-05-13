@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const iconRef = useRef<HTMLInputElement>(null)
   const bgRef = useRef<HTMLInputElement>(null)
+  const bgMobileRef = useRef<HTMLInputElement>(null)
   const [importMsg, setImportMsg] = useState('')
   const [showSubjectManager, setShowSubjectManager] = useState(false)
   const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string; teacher: string } | null>(null)
@@ -41,14 +42,11 @@ export default function SettingsPage() {
   const [mentorSendState, setMentorSendState] = useState<SendState>('idle')
   const [mentorSendMsg, setMentorSendMsg] = useState('')
 
-  const [bgUrlInput, setBgUrlInput] = useState('')
-  const [bgMobileUrlInput, setBgMobileUrlInput] = useState('')
-
   const [notifState, setNotifState] = useState<'default' | 'granted' | 'denied'>(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
 
-  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, bgPosition, setBgPosition, bgPositionMobile, setBgPositionMobile } = store
+  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -59,12 +57,36 @@ export default function SettingsPage() {
     e.target.value = ''
   }
 
-  function handleBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function compressImage(file: File, maxW: number, maxH: number): Promise<string> {
+    return new Promise(resolve => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const ratio = Math.min(maxW / img.width, maxH / img.height, 1)
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(img.width * ratio)
+        canvas.height = Math.round(img.height * ratio)
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+        URL.revokeObjectURL(url)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.src = url
+    })
+  }
+
+  async function handleBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => setBgImage(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    const compressed = await compressImage(file, 1920, 1080)
+    setBgImage(compressed)
+    e.target.value = ''
+  }
+
+  async function handleBgMobileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const compressed = await compressImage(file, 1080, 1920)
+    setBgImageMobile(compressed)
     e.target.value = ''
   }
 
@@ -224,53 +246,29 @@ export default function SettingsPage() {
       {/* 背景画像 */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🌄 背景画像</h2>
-
-        {/* PC用 */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-muted)' }}>💻 PC用（横型推奨）</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-            <div style={{ width: 80, height: 50, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: bgImage ? `url(${bgImage}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative' }}>
-              {!bgImage && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🖼️</span>}
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+          {/* PC用 */}
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-muted)' }}>💻 PC用（横型）</div>
+            <div style={{ width: 96, height: 60, borderRadius: 8, overflow: 'hidden', background: bgImage ? `url(${bgImage}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 8 }}>
+              {!bgImage && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🖼️</span>}
             </div>
-            {bgImage && <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
+            <button className="btn-primary" onClick={() => bgRef.current?.click()} style={{ fontSize: 13, width: '100%', marginBottom: 6 }}>アップロード</button>
+            {bgImage && <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444', width: '100%' }}>削除</button>}
+            <input ref={bgRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
           </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <input className="input" placeholder="https:// で始まる画像URL" value={bgUrlInput} onChange={e => setBgUrlInput(e.target.value)} style={{ flex: 1, fontSize: 13 }} />
-            <button className="btn-primary" onClick={() => { if (bgUrlInput.startsWith('http')) { setBgImage(bgUrlInput); setBgUrlInput('') } }} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>設定</button>
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {['left top','center top','right top','left center','center','right center','left bottom','center bottom','right bottom'].map(pos => (
-              <button key={pos} onClick={() => setBgPosition(pos)} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: bgPosition === pos ? 'var(--emerald)' : 'var(--surface-2)', color: bgPosition === pos ? '#fff' : 'var(--text-muted)', cursor: 'pointer' }}>
-                {pos === 'left top' ? '↖' : pos === 'center top' ? '↑' : pos === 'right top' ? '↗' : pos === 'left center' ? '←' : pos === 'center' ? '●' : pos === 'right center' ? '→' : pos === 'left bottom' ? '↙' : pos === 'center bottom' ? '↓' : '↘'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* スマホ用 */}
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-muted)' }}>📱 スマホ用（縦型推奨）</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-            <div style={{ width: 36, height: 60, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: bgImageMobile ? `url(${bgImageMobile}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative' }}>
+          {/* スマホ用 */}
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-muted)' }}>📱 スマホ用（縦型）</div>
+            <div style={{ width: 40, height: 60, borderRadius: 8, overflow: 'hidden', background: bgImageMobile ? `url(${bgImageMobile}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 8 }}>
               {!bgImageMobile && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🖼️</span>}
             </div>
-            {bgImageMobile && <button className="btn-ghost" onClick={() => setBgImageMobile('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <input className="input" placeholder="https:// で始まる画像URL" value={bgMobileUrlInput} onChange={e => setBgMobileUrlInput(e.target.value)} style={{ flex: 1, fontSize: 13 }} />
-            <button className="btn-primary" onClick={() => { if (bgMobileUrlInput.startsWith('http')) { setBgImageMobile(bgMobileUrlInput); setBgMobileUrlInput('') } }} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>設定</button>
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {['left top','center top','right top','left center','center','right center','left bottom','center bottom','right bottom'].map(pos => (
-              <button key={pos} onClick={() => setBgPositionMobile(pos)} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: bgPositionMobile === pos ? 'var(--emerald)' : 'var(--surface-2)', color: bgPositionMobile === pos ? '#fff' : 'var(--text-muted)', cursor: 'pointer' }}>
-                {pos === 'left top' ? '↖' : pos === 'center top' ? '↑' : pos === 'right top' ? '↗' : pos === 'left center' ? '←' : pos === 'center' ? '●' : pos === 'right center' ? '→' : pos === 'left bottom' ? '↙' : pos === 'center bottom' ? '↓' : '↘'}
-              </button>
-            ))}
+            <button className="btn-primary" onClick={() => bgMobileRef.current?.click()} style={{ fontSize: 13, width: '100%', marginBottom: 6 }}>アップロード</button>
+            {bgImageMobile && <button className="btn-ghost" onClick={() => setBgImageMobile('')} style={{ fontSize: 12, color: '#ef4444', width: '100%' }}>削除</button>}
+            <input ref={bgMobileRef} type="file" accept="image/*" onChange={handleBgMobileUpload} style={{ display: 'none' }} />
           </div>
         </div>
-
-        <input ref={bgRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '12px 0 0' }}>PCとスマホで別々の背景を設定できます。</p>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '12px 0 0' }}>自動で圧縮します。PCとスマホで別々に設定できます。</p>
       </div>
 
       {/* Stats */}

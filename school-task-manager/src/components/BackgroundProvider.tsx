@@ -5,8 +5,6 @@ import { useStore } from '@/lib/store'
 export default function BackgroundProvider() {
   const bgImage = useStore(s => s.bgImage)
   const bgImageMobile = useStore(s => s.bgImageMobile)
-  const bgPosition = useStore(s => s.bgPosition)
-  const bgPositionMobile = useStore(s => s.bgPositionMobile)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -16,16 +14,12 @@ export default function BackgroundProvider() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // html背景をクリア
   useEffect(() => {
-    const html = document.documentElement
-    html.style.backgroundImage = ''
-    html.style.backgroundAttachment = ''
+    document.documentElement.style.backgroundImage = ''
+    document.documentElement.style.backgroundAttachment = ''
   }, [])
 
   const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
-  const position = isMobile ? (bgPositionMobile || 'center') : (bgPosition || 'center')
-
   if (!image) return null
 
   return (
@@ -36,10 +30,9 @@ export default function BackgroundProvider() {
         style={{
           position: 'fixed',
           top: 0, left: 0,
-          width: '100%',
-          height: '100%',
+          width: '100%', height: '100%',
           objectFit: 'cover',
-          objectPosition: position,
+          objectPosition: 'center',
           zIndex: 0,
           pointerEvents: 'none',
         }}
