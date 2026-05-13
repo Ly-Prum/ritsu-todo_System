@@ -14,21 +14,41 @@ export default function BackgroundProvider() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
+
+  // PC: html要素にfixed attachment（ビューポート基準なのでページ長さに関係なく一定）
   useEffect(() => {
-    const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
     const html = document.documentElement
-    if (image) {
-      html.style.backgroundImage = `linear-gradient(rgba(8,8,11,0.55), rgba(8,8,11,0.55)), url('${image}')`
+    if (!isMobile && image) {
+      html.style.backgroundImage = `linear-gradient(rgba(8,8,11,0.55),rgba(8,8,11,0.55)),url('${image}')`
       html.style.backgroundSize = 'cover'
       html.style.backgroundPosition = 'center'
       html.style.backgroundRepeat = 'no-repeat'
+      html.style.backgroundAttachment = 'fixed'
     } else {
       html.style.backgroundImage = ''
       html.style.backgroundSize = ''
       html.style.backgroundPosition = ''
       html.style.backgroundRepeat = ''
+      html.style.backgroundAttachment = ''
     }
-  }, [bgImage, bgImageMobile, isMobile])
+  }, [image, isMobile])
 
-  return null
+  // スマホ: position:fixed のdivで常にビューポートサイズ
+  if (!image || !isMobile) return null
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundImage: `url('${image}')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      zIndex: 0,
+      pointerEvents: 'none',
+    }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,8,11,0.55)' }} />
+    </div>
+  )
 }
