@@ -27,6 +27,7 @@ export default function SupabaseSync() {
         if (d.subjects !== undefined || d.tasks !== undefined) s.importData(d)
         if (d.sidebarIcon !== undefined) s.setSidebarIcon(d.sidebarIcon)
         if (d.bgImage !== undefined) s.setBgImage(d.bgImage)
+        if (d.bgImageMobile !== undefined) s.setBgImageMobile(d.bgImageMobile)
         if (d.language) s.setLanguage(d.language)
         if (d.freeNote !== undefined) s.updateFreeNote(d.freeNote)
         if (d.integrations) s.updateIntegrations(d.integrations)
@@ -45,6 +46,7 @@ export default function SupabaseSync() {
           ...s.exportData(),
           sidebarIcon: s.sidebarIcon,
           bgImage: s.bgImage,
+          bgImageMobile: s.bgImageMobile,
           language: s.language,
           freeNote: s.freeNote,
           integrations: s.integrations,

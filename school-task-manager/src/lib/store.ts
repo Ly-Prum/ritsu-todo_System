@@ -17,9 +17,11 @@ interface AppStore extends AppData {
   language: Lang
   sidebarIcon: string
   bgImage: string
+  bgImageMobile: string
   setLanguage: (lang: Lang) => void
   setSidebarIcon: (url: string) => void
   setBgImage: (url: string) => void
+  setBgImageMobile: (url: string) => void
 
   // Subjects
   addSubject: (subject: Omit<Subject, 'id'>) => void
@@ -110,9 +112,11 @@ export const useStore = create<AppStore>()(
       language: 'ja' as Lang,
       sidebarIcon: '',
       bgImage: '',
+      bgImageMobile: '',
       setLanguage: (lang) => set({ language: lang }),
       setSidebarIcon: (url) => set({ sidebarIcon: url }),
       setBgImage: (url) => set({ bgImage: url }),
+      setBgImageMobile: (url) => set({ bgImageMobile: url }),
 
       addSubject: (subject) => set((s) => ({ subjects: [...s.subjects, { ...subject, id: generateId() }] })),
       updateSubject: (id, updates) => set((s) => ({ subjects: s.subjects.map((x) => x.id === id ? { ...x, ...updates } : x) })),
