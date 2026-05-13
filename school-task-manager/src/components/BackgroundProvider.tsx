@@ -16,40 +16,41 @@ export default function BackgroundProvider() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
-  const position = (isMobile && bgPositionMobile) ? bgPositionMobile : bgPosition
-
+  // html背景をクリア
   useEffect(() => {
     const html = document.documentElement
-    if (!isMobile && image) {
-      html.style.backgroundImage = `linear-gradient(rgba(8,8,11,0.55),rgba(8,8,11,0.55)),url('${image}')`
-      html.style.backgroundSize = 'cover'
-      html.style.backgroundPosition = position
-      html.style.backgroundRepeat = 'no-repeat'
-      html.style.backgroundAttachment = 'fixed'
-    } else {
-      html.style.backgroundImage = ''
-      html.style.backgroundSize = ''
-      html.style.backgroundPosition = ''
-      html.style.backgroundRepeat = ''
-      html.style.backgroundAttachment = ''
-    }
-  }, [image, isMobile, position])
+    html.style.backgroundImage = ''
+    html.style.backgroundAttachment = ''
+  }, [])
 
-  if (!image || !isMobile) return null
+  const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
+  const position = isMobile ? (bgPositionMobile || 'center') : (bgPosition || 'center')
+
+  if (!image) return null
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
-      backgroundImage: `url('${image}')`,
-      backgroundSize: 'cover',
-      backgroundPosition: position,
-      backgroundRepeat: 'no-repeat',
-      zIndex: 0,
-      pointerEvents: 'none',
-    }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,8,11,0.55)' }} />
-    </div>
+    <>
+      <img
+        src={image}
+        alt=""
+        style={{
+          position: 'fixed',
+          top: 0, left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: position,
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+      <div style={{
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(8,8,11,0.55)',
+        zIndex: 1,
+        pointerEvents: 'none',
+      }} />
+    </>
   )
 }
