@@ -41,6 +41,8 @@ export default function SettingsPage() {
   const [mentorSendState, setMentorSendState] = useState<SendState>('idle')
   const [mentorSendMsg, setMentorSendMsg] = useState('')
 
+  const [bgUrlInput, setBgUrlInput] = useState('')
+
   const [notifState, setNotifState] = useState<'default' | 'granted' | 'denied'>(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
@@ -242,16 +244,19 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             className="input"
-            placeholder="画像URL を入力（スマホでも動作・推奨）"
-            onBlur={e => { if (e.target.value.startsWith('http')) setBgImage(e.target.value) }}
-            onKeyDown={e => { if (e.key === 'Enter' && (e.target as HTMLInputElement).value.startsWith('http')) setBgImage((e.target as HTMLInputElement).value) }}
+            placeholder="https:// で始まる画像URL"
+            value={bgUrlInput}
+            onChange={e => setBgUrlInput(e.target.value)}
             style={{ flex: 1, fontSize: 13 }}
           />
+          <button className="btn-primary" onClick={() => { if (bgUrlInput.startsWith('http')) { setBgImage(bgUrlInput); setBgUrlInput('') } }} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+            設定
+          </button>
           <button className="btn-secondary" onClick={() => bgRef.current?.click()} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
             ファイル
           </button>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '8px 0 0' }}>URLがおすすめです。ファイルはスマホで表示されないことがあります。</p>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '8px 0 0' }}>URLがおすすめです（スマホでも確実に表示されます）。</p>
       </div>
 
       {/* Stats */}
