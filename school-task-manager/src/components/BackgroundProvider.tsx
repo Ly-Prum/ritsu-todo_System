@@ -9,7 +9,7 @@ export default function BackgroundProvider() {
     const html = document.documentElement
     if (bgImage) {
       html.style.backgroundImage = `linear-gradient(rgba(8,8,11,0.55), rgba(8,8,11,0.55)), url('${bgImage}')`
-      html.style.backgroundSize = 'cover'
+      html.style.backgroundSize = 'contain'
       html.style.backgroundPosition = 'center'
       html.style.backgroundRepeat = 'no-repeat'
     } else {
