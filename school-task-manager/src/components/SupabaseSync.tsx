@@ -28,6 +28,8 @@ export default function SupabaseSync() {
         if (d.sidebarIcon !== undefined) s.setSidebarIcon(d.sidebarIcon)
         if (d.bgImage !== undefined) s.setBgImage(d.bgImage)
         if (d.bgImageMobile !== undefined) s.setBgImageMobile(d.bgImageMobile)
+        if (d.bgPosition !== undefined) s.setBgPosition(d.bgPosition)
+        if (d.bgPositionMobile !== undefined) s.setBgPositionMobile(d.bgPositionMobile)
         if (d.language) s.setLanguage(d.language)
         if (d.freeNote !== undefined) s.updateFreeNote(d.freeNote)
         if (d.integrations) s.updateIntegrations(d.integrations)
@@ -47,6 +49,8 @@ export default function SupabaseSync() {
           sidebarIcon: s.sidebarIcon,
           bgImage: s.bgImage,
           bgImageMobile: s.bgImageMobile,
+          bgPosition: s.bgPosition,
+          bgPositionMobile: s.bgPositionMobile,
           language: s.language,
           freeNote: s.freeNote,
           integrations: s.integrations,

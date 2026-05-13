@@ -5,6 +5,8 @@ import { useStore } from '@/lib/store'
 export default function BackgroundProvider() {
   const bgImage = useStore(s => s.bgImage)
   const bgImageMobile = useStore(s => s.bgImageMobile)
+  const bgPosition = useStore(s => s.bgPosition)
+  const bgPositionMobile = useStore(s => s.bgPositionMobile)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -15,14 +17,14 @@ export default function BackgroundProvider() {
   }, [])
 
   const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
+  const position = (isMobile && bgPositionMobile) ? bgPositionMobile : bgPosition
 
-  // PC: html要素にfixed attachment（ビューポート基準なのでページ長さに関係なく一定）
   useEffect(() => {
     const html = document.documentElement
     if (!isMobile && image) {
       html.style.backgroundImage = `linear-gradient(rgba(8,8,11,0.55),rgba(8,8,11,0.55)),url('${image}')`
       html.style.backgroundSize = 'cover'
-      html.style.backgroundPosition = 'center'
+      html.style.backgroundPosition = position
       html.style.backgroundRepeat = 'no-repeat'
       html.style.backgroundAttachment = 'fixed'
     } else {
@@ -32,9 +34,8 @@ export default function BackgroundProvider() {
       html.style.backgroundRepeat = ''
       html.style.backgroundAttachment = ''
     }
-  }, [image, isMobile])
+  }, [image, isMobile, position])
 
-  // スマホ: position:fixed のdivで常にビューポートサイズ
   if (!image || !isMobile) return null
 
   return (
@@ -43,7 +44,7 @@ export default function BackgroundProvider() {
       top: 0, left: 0, right: 0, bottom: 0,
       backgroundImage: `url('${image}')`,
       backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundPosition: position,
       backgroundRepeat: 'no-repeat',
       zIndex: 0,
       pointerEvents: 'none',

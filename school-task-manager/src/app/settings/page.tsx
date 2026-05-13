@@ -48,7 +48,7 @@ export default function SettingsPage() {
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
 
-  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile } = store
+  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, bgPosition, setBgPosition, bgPositionMobile, setBgPositionMobile } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -234,9 +234,16 @@ export default function SettingsPage() {
             </div>
             {bgImage && <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             <input className="input" placeholder="https:// で始まる画像URL" value={bgUrlInput} onChange={e => setBgUrlInput(e.target.value)} style={{ flex: 1, fontSize: 13 }} />
             <button className="btn-primary" onClick={() => { if (bgUrlInput.startsWith('http')) { setBgImage(bgUrlInput); setBgUrlInput('') } }} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>設定</button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['left top','center top','right top','left center','center','right center','left bottom','center bottom','right bottom'].map(pos => (
+              <button key={pos} onClick={() => setBgPosition(pos)} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: bgPosition === pos ? 'var(--emerald)' : 'var(--surface-2)', color: bgPosition === pos ? '#fff' : 'var(--text-muted)', cursor: 'pointer' }}>
+                {pos === 'left top' ? '↖' : pos === 'center top' ? '↑' : pos === 'right top' ? '↗' : pos === 'left center' ? '←' : pos === 'center' ? '●' : pos === 'right center' ? '→' : pos === 'left bottom' ? '↙' : pos === 'center bottom' ? '↓' : '↘'}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -249,9 +256,16 @@ export default function SettingsPage() {
             </div>
             {bgImageMobile && <button className="btn-ghost" onClick={() => setBgImageMobile('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             <input className="input" placeholder="https:// で始まる画像URL" value={bgMobileUrlInput} onChange={e => setBgMobileUrlInput(e.target.value)} style={{ flex: 1, fontSize: 13 }} />
             <button className="btn-primary" onClick={() => { if (bgMobileUrlInput.startsWith('http')) { setBgImageMobile(bgMobileUrlInput); setBgMobileUrlInput('') } }} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>設定</button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['left top','center top','right top','left center','center','right center','left bottom','center bottom','right bottom'].map(pos => (
+              <button key={pos} onClick={() => setBgPositionMobile(pos)} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: bgPositionMobile === pos ? 'var(--emerald)' : 'var(--surface-2)', color: bgPositionMobile === pos ? '#fff' : 'var(--text-muted)', cursor: 'pointer' }}>
+                {pos === 'left top' ? '↖' : pos === 'center top' ? '↑' : pos === 'right top' ? '↗' : pos === 'left center' ? '←' : pos === 'center' ? '●' : pos === 'right center' ? '→' : pos === 'left bottom' ? '↙' : pos === 'center bottom' ? '↓' : '↘'}
+              </button>
+            ))}
           </div>
         </div>
 
