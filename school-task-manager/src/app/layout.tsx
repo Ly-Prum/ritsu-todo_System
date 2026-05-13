@@ -6,6 +6,7 @@ import SupabaseSync from '@/components/SupabaseSync'
 import NotificationInit from '@/components/NotificationInit'
 import BottomNav from '@/components/BottomNav'
 import AlarmManager from '@/components/AlarmManager'
+import MobileHeader from '@/components/MobileHeader'
 
 export const metadata: Metadata = {
   title: 'Ritsuki Dashboard',
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SupabaseSync />
         <NotificationInit />
         <AlarmManager />
+        <MobileHeader />
         <div style={{ display: 'flex', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
           <Sidebar />
           <main style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>

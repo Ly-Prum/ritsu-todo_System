@@ -256,7 +256,7 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
 .timetable-cell.empty:hover { opacity: 1; }
 
 @media (max-width: 767px) {
-  main { padding-bottom: 72px; }
+  main { padding-bottom: 72px; padding-top: 52px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .main-grid { grid-template-columns: 1fr !important; }
   .hide-mobile { display: none !important; }
