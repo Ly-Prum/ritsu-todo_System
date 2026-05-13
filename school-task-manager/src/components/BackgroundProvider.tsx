@@ -1,26 +1,35 @@
 'use client'
+import { useEffect } from 'react'
 import { useStore } from '@/lib/store'
 
 export default function BackgroundProvider() {
   const bgImage = useStore(s => s.bgImage)
-  if (!bgImage) return null
 
+  useEffect(() => {
+    const body = document.body
+    if (bgImage) {
+      body.style.backgroundImage = `url('${bgImage}')`
+      body.style.backgroundSize = 'cover'
+      body.style.backgroundPosition = 'center center'
+      body.style.backgroundRepeat = 'no-repeat'
+      body.style.backgroundAttachment = 'scroll'
+    } else {
+      body.style.backgroundImage = ''
+      body.style.backgroundSize = ''
+      body.style.backgroundPosition = ''
+      body.style.backgroundRepeat = ''
+      body.style.backgroundAttachment = ''
+    }
+  }, [bgImage])
+
+  if (!bgImage) return null
   return (
     <div style={{
       position: 'fixed',
-      inset: 0,
+      top: 0, left: 0, right: 0, bottom: 0,
       zIndex: 1,
       pointerEvents: 'none',
-      backgroundImage: `url(${bgImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-    }}>
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'rgba(8,8,11,0.55)',
-      }} />
-    </div>
+      background: 'rgba(8,8,11,0.55)',
+    }} />
   )
 }
