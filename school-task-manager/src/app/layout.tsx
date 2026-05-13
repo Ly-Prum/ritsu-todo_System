@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SupabaseSync />
         <NotificationInit />
         <AlarmManager />
-        <div style={{ display: 'flex', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
+        <div style={{ display: 'flex', minHeight: '100vh', position: 'relative', zIndex: 2, background: 'transparent' }}>
           <Sidebar />
           <main style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
             {children}
