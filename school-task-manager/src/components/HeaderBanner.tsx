@@ -6,9 +6,11 @@ export default function HeaderBanner() {
   const headerBanner = useStore(s => s.headerBanner)
   const headerBannerY = useStore(s => s.headerBannerY)
   const headerBannerHeight = useStore(s => s.headerBannerHeight)
+  const headerBannerZoom = useStore(s => s.headerBannerZoom)
   const setHeaderBanner = useStore(s => s.setHeaderBanner)
   const setHeaderBannerY = useStore(s => s.setHeaderBannerY)
   const setHeaderBannerHeight = useStore(s => s.setHeaderBannerHeight)
+  const setHeaderBannerZoom = useStore(s => s.setHeaderBannerZoom)
 
   const [hovering, setHovering] = useState(false)
   const [repositioning, setRepositioning] = useState(false)
@@ -37,6 +39,9 @@ export default function HeaderBanner() {
   }
   function nudgeH(dir: 'smaller' | 'larger') {
     setHeaderBannerHeight(Math.max(80, Math.min(320, headerBannerHeight + (dir === 'larger' ? 20 : -20))))
+  }
+  function nudgeZoom(dir: 'in' | 'out') {
+    setHeaderBannerZoom(Math.max(1, Math.min(3, parseFloat((headerBannerZoom + (dir === 'in' ? 0.1 : -0.1)).toFixed(1)))))
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -88,6 +93,8 @@ export default function HeaderBanner() {
           width: '100%', height: '100%', objectFit: 'cover',
           objectPosition: `center ${headerBannerY}%`,
           display: 'block', userSelect: 'none',
+          transform: `scale(${headerBannerZoom})`,
+          transformOrigin: 'center center',
         }}
       />
       <div style={{
@@ -107,10 +114,16 @@ export default function HeaderBanner() {
             <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeY('down') }}>▼</button>
           </div>
 
-          {/* サイズ調整 */}
+          {/* 高さ調整（左） */}
           <div style={{ position: 'absolute', top: '50%', left: 12, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 6, zIndex: 10 }}>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeH('larger') }} title="高く（ズームアウト）">＋</button>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeH('smaller') }} title="低く（ズームイン）">－</button>
+            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeH('larger') }} title="高く">↕＋</button>
+            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeH('smaller') }} title="低く">↕－</button>
+          </div>
+
+          {/* ズーム調整（右） */}
+          <div style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 6, zIndex: 10 }}>
+            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeZoom('in') }} title="拡大">🔍＋</button>
+            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeZoom('out') }} title="縮小">🔍－</button>
           </div>
 
           <div style={{
@@ -120,7 +133,7 @@ export default function HeaderBanner() {
             padding: '5px 14px', borderRadius: 20, fontSize: 11,
             pointerEvents: 'none', whiteSpace: 'nowrap',
           }}>
-            ▲▼ 位置　＋－ サイズ　ドラッグで移動
+            ▲▼ 位置　↕± 高さ　🔍± ズーム　ドラッグ移動
           </div>
 
           <div style={{ position: 'absolute', bottom: 10, right: 12, zIndex: 10 }}>
