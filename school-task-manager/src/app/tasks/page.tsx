@@ -457,6 +457,7 @@ function GaugeCard({ label, value, total, color, subtitle }: {
   return (
     <div style={{
       background: 'var(--surface-2)', borderRadius: 12, padding: '14px 12px 10px',
+      border: '1px solid #353548',
       display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 130,
     }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6, textAlign: 'center' }}>{label}</div>
