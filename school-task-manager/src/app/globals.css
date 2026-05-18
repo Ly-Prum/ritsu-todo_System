@@ -14,7 +14,7 @@
 }
 
 * { box-sizing: border-box; }
-button { -webkit-appearance: none; appearance: none; }
+button { -webkit-appearance: none; appearance: none; background: transparent; border: none; }
 
 html {
   background-color: var(--bg);

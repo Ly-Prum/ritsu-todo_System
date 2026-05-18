@@ -141,7 +141,7 @@ export default function EventsPage() {
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}>
-          <span className="gradient-text">イベント</span>管理
+          <span className="gradient-text">イベント管理</span>
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
           スクーリング・試験・イベントを管理
