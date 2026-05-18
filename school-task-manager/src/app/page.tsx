@@ -282,7 +282,7 @@ export default function Dashboard() {
               }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>{formatEventDate(ev.date)}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, flex: 1 }}>{ev.title}</span>
-                <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 9999, background: ev.color + '25', color: ev.color }}>
+                <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 9999, backgroundColor: ev.color + '25', color: ev.color, forcedColorAdjust: 'none' } as React.CSSProperties}>
                   {EVENT_TYPE_LABELS[ev.type]}
                 </span>
               </div>
@@ -323,8 +323,8 @@ export default function Dashboard() {
                 <div key={task.id} className="card-2" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{
                     width: 4, height: 36, borderRadius: 2, flexShrink: 0,
-                    background: getSubjectColor(task.subjectId),
-                  }} />
+                    backgroundColor: getSubjectColor(task.subjectId), forcedColorAdjust: 'none',
+                  } as React.CSSProperties} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {task.title}
@@ -409,7 +409,7 @@ export default function Dashboard() {
                   const count = pending.filter(t => t.subjectId === s.id).length
                   return (
                     <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: s.color, flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
                       <span style={{ fontSize: 13, flex: 1 }}>{s.name}</span>
                       <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{count}件</span>
                     </div>

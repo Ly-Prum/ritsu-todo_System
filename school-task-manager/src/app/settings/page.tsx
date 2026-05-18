@@ -581,7 +581,7 @@ export default function SettingsPage() {
                   </>
                 ) : (
                   <>
-                    <div style={{ width: 12, height: 12, borderRadius: 3, background: s.color, flexShrink: 0 }} />
+                    <div style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: s.color, flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
                     <span style={{ flex: 1, fontSize: 14 }}>{s.name}</span>
                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{tasks.filter(t => t.subjectId === s.id).length}件</span>
                     <button className="btn-ghost" style={{ padding: '4px 6px' }} onClick={() => setEditSubject({ id: s.id, name: s.name, color: s.color })}><Pencil size={13} /></button>

@@ -78,7 +78,7 @@ export default function MemosPage() {
             <div
               key={memo.id}
               style={{
-                background: memo.color,
+                backgroundColor: memo.color, forcedColorAdjust: 'none',
                 border: '1px solid rgba(0,0,0,0.06)',
                 borderRadius: 12,
                 padding: '16px',

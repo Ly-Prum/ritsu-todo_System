@@ -170,7 +170,7 @@ export default function CalendarPage() {
                     {dayTasks.slice(0, 3).map(task => (
                       <div key={task.id} style={{
                         fontSize: 11, padding: '2px 5px', borderRadius: 3,
-                        background: getSubjectColor(task.subjectId) + '30',
+                        backgroundColor: getSubjectColor(task.subjectId) + '30', forcedColorAdjust: 'none',
                         borderLeft: `2px solid ${getSubjectColor(task.subjectId)}`,
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         opacity: task.status === 'completed' ? 0.5 : 1,
@@ -182,11 +182,11 @@ export default function CalendarPage() {
                     {dayEvents.slice(0, 3).map(ev => (
                       <div key={ev.id} style={{
                         fontSize: 11, padding: '2px 5px', borderRadius: 3,
-                        background: ev.color + '30',
+                        backgroundColor: ev.color + '30', forcedColorAdjust: 'none',
                         display: 'flex', alignItems: 'center', gap: 3,
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
-                        <span style={{ width: 7, height: 7, borderRadius: 1, background: ev.color, flexShrink: 0, display: 'inline-block' }} />
+                        <span style={{ width: 7, height: 7, borderRadius: 1, backgroundColor: ev.color, flexShrink: 0, display: 'inline-block', forcedColorAdjust: 'none' } as React.CSSProperties} />
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</span>
                       </div>
                     ))}
@@ -261,7 +261,7 @@ export default function CalendarPage() {
                       </div>
                       {subjects.find(s => s.id === task.subjectId) && (
                         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: getSubjectColor(task.subjectId), marginRight: 5 }} />
+                          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: getSubjectColor(task.subjectId), marginRight: 5, forcedColorAdjust: 'none' } as React.CSSProperties} />
                           {subjects.find(s => s.id === task.subjectId)?.name}
                         </div>
                       )}

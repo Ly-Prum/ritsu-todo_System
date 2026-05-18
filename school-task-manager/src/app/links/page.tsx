@@ -182,7 +182,7 @@ export default function LinksPage() {
                     )}
                     <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
                       <a href={link.url} target="_blank" rel="noreferrer" className="btn-primary"
-                        style={{ flex: 1, textDecoration: 'none', justifyContent: 'center', fontSize: 12, padding: '7px 10px', background: link.color }}>
+                        style={{ flex: 1, textDecoration: 'none', justifyContent: 'center', fontSize: 12, padding: '7px 10px', backgroundColor: link.color, forcedColorAdjust: 'none' } as React.CSSProperties}>
                         <ExternalLink size={12} /> 開く
                       </a>
                       <button className="btn-secondary" onClick={() => openEdit(link)} style={{ padding: '7px 10px' }}><Pencil size={12} /></button>

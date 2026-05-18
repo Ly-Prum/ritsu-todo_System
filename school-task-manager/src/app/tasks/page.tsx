@@ -249,7 +249,7 @@ export default function TasksPage() {
                 {task.status === 'completed' ? <CheckCircle2 size={22} /> : <Circle size={22} />}
               </button>
 
-              <div style={{ width: 4, height: 40, borderRadius: 2, background: getSubjectColor(task.subjectId), flexShrink: 0 }} />
+              <div style={{ width: 4, height: 40, borderRadius: 2, backgroundColor: getSubjectColor(task.subjectId), flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

@@ -107,7 +107,7 @@ export default function TimetablePage() {
                   className={`timetable-cell ${!slot ? 'empty' : ''}`}
                   style={{
                     borderLeft: '1px solid rgba(255,255,255,0.06)',
-                    background: subject ? `${subject.color}18` : 'transparent',
+                    backgroundColor: subject ? `${subject.color}18` : 'transparent', forcedColorAdjust: 'none',
                     borderTop: subject ? `3px solid ${subject.color}` : undefined,
                   }}
                 >
@@ -135,7 +135,7 @@ export default function TimetablePage() {
         <div className="card" style={{ padding: '14px 16px', marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
           {subjects.map(s => (
             <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-              <div style={{ width: 10, height: 10, borderRadius: 2, background: s.color }} />
+              <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: s.color, forcedColorAdjust: 'none' } as React.CSSProperties} />
               <span>{s.name}</span>
             </div>
           ))}
