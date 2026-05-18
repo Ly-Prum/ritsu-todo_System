@@ -92,11 +92,14 @@ export default function HeaderBanner() {
         <img
           src={headerBanner} alt="" draggable={false}
           style={{
-            width: '100%', height: '100%', objectFit: 'cover',
+            position: 'absolute',
+            width: `${(headerBannerZoom ?? 1) * 100}%`,
+            height: `${(headerBannerZoom ?? 1) * 100}%`,
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            objectFit: 'cover',
             objectPosition: `center ${headerBannerY}%`,
             display: 'block', userSelect: 'none',
-            transform: `scale(${headerBannerZoom ?? 1})`,
-            transformOrigin: 'center center',
           }}
         />
         <div style={{
