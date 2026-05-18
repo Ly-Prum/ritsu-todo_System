@@ -157,12 +157,10 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
 }
 
 .color-swatch {
-  -webkit-appearance: none !important;
-  appearance: none !important;
-  outline: none !important;
   cursor: pointer;
   padding: 0;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .sidebar-link {
