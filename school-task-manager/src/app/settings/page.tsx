@@ -49,7 +49,7 @@ export default function SettingsPage() {
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
 
-  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, headerBanner, setHeaderBanner, headerBannerY, setHeaderBannerY, headerBannerZoom, setHeaderBannerZoom } = store
+  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, headerBanner, setHeaderBanner, headerBannerY, setHeaderBannerY, headerBannerZoom } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -318,20 +318,6 @@ export default function SettingsPage() {
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                 <span>上</span><span>下</span>
-              </div>
-            </div>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span>ズーム</span>
-                <span>{Math.round((headerBannerZoom ?? 1) * 100)}%</span>
-              </label>
-              <input
-                type="range" min={100} max={300} step={5} value={Math.round((headerBannerZoom ?? 1) * 100)}
-                onChange={e => setHeaderBannerZoom(Number(e.target.value) / 100)}
-                style={{ width: '100%', accentColor: 'var(--emerald)' }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                <span>縮小</span><span>拡大</span>
               </div>
             </div>
           </div>
