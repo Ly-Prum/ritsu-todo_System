@@ -95,6 +95,7 @@ export default function HeaderBanner() {
             position: 'absolute',
             width: `${(headerBannerZoom ?? 1) * 100}%`,
             height: `${(headerBannerZoom ?? 1) * 100}%`,
+            maxWidth: 'none',
             top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
             objectFit: 'cover',
