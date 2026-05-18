@@ -564,7 +564,7 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
         </div>
       )}
 
-      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="card" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
