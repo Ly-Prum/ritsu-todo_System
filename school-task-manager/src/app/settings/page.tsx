@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
+import Image from 'next/image'
 import { useStore } from '@/lib/store'
 import { sendSlackTest } from '@/lib/slack'
 import type { AppData, SlackChannel } from '@/lib/types'
@@ -61,7 +62,7 @@ export default function SettingsPage() {
 
   function compressImage(file: File, maxW: number, maxH: number): Promise<string> {
     return new Promise(resolve => {
-      const img = new Image()
+      const img = new window.Image()
       const url = URL.createObjectURL(file)
       img.onload = () => {
         const ratio = Math.min(maxW / img.width, maxH / img.height, 1)
@@ -281,23 +282,22 @@ export default function SettingsPage() {
       {/* ヘッダーバナー */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🖼️ ヘッダーバナー</h2>
-        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: 'var(--surface-2)', border: '1px solid var(--border)', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: 'var(--surface-2)', border: '1px solid var(--border)', marginBottom: 12, position: 'relative' }}>
           {headerBanner ? (
-            <img
+            <Image
               src={headerBanner}
               alt=""
+              fill
+              unoptimized
+              className="object-cover will-change-transform"
               style={{
-                width: `${(headerBannerZoom ?? 1) * 100}%`,
-                height: `${(headerBannerZoom ?? 1) * 100}%`,
-                maxWidth: 'none',
-                objectFit: 'cover',
                 objectPosition: `center ${headerBannerY}%`,
-                display: 'block',
-                flexShrink: 0,
+                transform: `scale(${headerBannerZoom ?? 1})`,
+                transformOrigin: 'center center',
               }}
             />
           ) : (
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>
+            <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: headerBanner ? 14 : 0 }}>
