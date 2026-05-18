@@ -379,12 +379,17 @@ export default function TasksPage() {
                 <label className="label">{t('lbl_color')}</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                   {SUBJECT_COLORS.map(c => (
-                    <div key={c} onClick={() => setNewSubject(s => ({ ...s, color: c }))} style={{
-                      width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, overflow: 'hidden',
-                      border: newSubject.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
-                    }}>
-                      <span style={{ display: 'block', width: '100%', height: '100%', background: c }} />
-                    </div>
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setNewSubject(s => ({ ...s, color: c }))}
+                      style={{
+                        backgroundColor: c,
+                        border: newSubject.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
+                        width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, padding: 0,
+                      }}
+                      className="forced-color-adjust-none active:scale-95 transition-transform focus:outline-none"
+                    />
                   ))}
                 </div>
               </div>
