@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { SUBJECT_COLORS } from '@/lib/utils'
 import { useT } from '@/hooks/useT'
+import GradientText from '@/components/GradientText'
 
 type SendState = 'idle' | 'loading' | 'ok' | 'error'
 
@@ -200,7 +201,7 @@ export default function SettingsPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 24px' }}><span className="gradient-text">{t('set_title')}</span></h1>
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 24px' }}><GradientText>{t('set_title')}</GradientText></h1>
 
       {/* 言語設定 */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>

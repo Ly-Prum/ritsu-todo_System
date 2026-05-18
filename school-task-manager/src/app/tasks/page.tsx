@@ -8,6 +8,7 @@ import {
 import type { Task, Priority, TaskStatus, TaskType } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, CheckCircle2, Circle, Clock, Filter, Search } from 'lucide-react'
 import { useT } from '@/hooks/useT'
+import GradientText from '@/components/GradientText'
 
 const emptyForm = {
   title: '', description: '', subjectId: '', dueDate: '',
@@ -124,7 +125,7 @@ export default function TasksPage() {
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><span className="gradient-text">{t('tasks_title')}</span></h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><GradientText>{t('tasks_title')}</GradientText></h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
             {tasks.length}{t('tasks_stat_registered')} · {tasks.filter(task => task.status === 'completed').length}{t('tasks_stat_done')}
           </p>

@@ -8,6 +8,7 @@ import {
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useT } from '@/hooks/useT'
 import { useStore } from '@/lib/store'
+import GradientText from '@/components/GradientText'
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -52,7 +53,7 @@ export default function Sidebar() {
           }
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 13, fontWeight: 700 }} className="gradient-text">Study Task Manager</div>
+          <div style={{ fontSize: 13, fontWeight: 700 }}><GradientText>Study Task Manager</GradientText></div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('nav_subtitle')}</div>
         </div>
       </div>

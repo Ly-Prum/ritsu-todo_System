@@ -4,6 +4,7 @@ import { useStore } from '@/lib/store'
 import { EVENT_TYPE_LABELS, EVENT_COLORS } from '@/lib/utils'
 import type { AppEvent } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, CalendarCheck, MapPin, Bell, Clock, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
+import GradientText from '@/components/GradientText'
 
 type EventType = AppEvent['type']
 type FilterType = 'all' | EventType
@@ -141,7 +142,7 @@ export default function EventsPage() {
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}>
-          <span className="gradient-text">イベント管理</span>
+          <GradientText>イベント管理</GradientText>
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
           スクーリング・試験・イベントを管理

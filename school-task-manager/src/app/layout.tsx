@@ -35,20 +35,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* Injected raw — bypasses Tailwind/Lightning CSS transform */}
+        <meta name="color-scheme" content="dark" />
         <style dangerouslySetInnerHTML={{ __html: `
           .gradient-text {
-            background: linear-gradient(135deg, #34d399 0%, #38bdf8 100%) !important;
+            background-image: linear-gradient(135deg, #34d399 0%, #38bdf8 100%) !important;
             -webkit-background-clip: text !important;
             -webkit-text-fill-color: transparent !important;
             background-clip: text !important;
-            color: transparent !important;
             display: inline-block !important;
             -webkit-font-smoothing: antialiased !important;
+            forced-color-adjust: none !important;
           }
           .color-swatch-inner {
             display: block !important;
             width: 100% !important;
             height: 100% !important;
+            forced-color-adjust: none !important;
           }
         ` }} />
       </head>

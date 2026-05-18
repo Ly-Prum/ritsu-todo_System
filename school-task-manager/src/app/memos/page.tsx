@@ -4,6 +4,7 @@ import { useStore } from '@/lib/store'
 import { MEMO_COLORS } from '@/lib/utils'
 import type { Memo } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, Pin, PinOff, Search, StickyNote } from 'lucide-react'
+import GradientText from '@/components/GradientText'
 
 const emptyForm = { title: '', content: '', category: '', isPinned: false, color: MEMO_COLORS[0] }
 
@@ -52,7 +53,7 @@ export default function MemosPage() {
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><span className="gradient-text">メモ</span></h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><GradientText>メモ</GradientText></h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{memos.length} 件のメモ</p>
         </div>
         <button className="btn-primary" onClick={openNew}><Plus size={14} /> 新しいメモ</button>

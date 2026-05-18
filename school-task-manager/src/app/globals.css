@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: dark;
   --bg: #08080b;
   --surface: #0f0f14;
   --surface-2: #17171e;
@@ -148,12 +149,12 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #34d399, #38bdf8);
+  background-image: linear-gradient(135deg, #34d399, #38bdf8);
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
-  color: transparent !important;
   display: inline-block;
+  forced-color-adjust: none !important;
 }
 
 .color-swatch {
@@ -162,6 +163,7 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
   padding: 0;
   display: inline-block;
   flex-shrink: 0;
+  forced-color-adjust: none;
 }
 
 .sidebar-link {

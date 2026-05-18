@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 import { useStore } from '@/lib/store'
 import type { LinkItem } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, ExternalLink, Search, Link2, ImagePlus, Smile } from 'lucide-react'
+import GradientText from '@/components/GradientText'
 
 
 const EMOJI_PALETTE = [
@@ -122,7 +123,7 @@ export default function LinksPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}>
-            <span className="gradient-text">マイリンク</span>
+            <GradientText>マイリンク</GradientText>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>よく使うサービスのショートカット</p>
         </div>

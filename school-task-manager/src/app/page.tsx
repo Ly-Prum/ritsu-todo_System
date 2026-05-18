@@ -7,6 +7,7 @@ import {
   CalendarDays, Plus, ChevronDown, ChevronUp, CalendarCheck
 } from 'lucide-react'
 import Link from 'next/link'
+import GradientText from '@/components/GradientText'
 
 export default function Dashboard() {
   const { tasks, subjects, events } = useStore()
@@ -55,7 +56,7 @@ export default function Dashboard() {
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, marginBottom: 4 }}>
-          <span className="gradient-text">Study Task Manager</span>
+          <GradientText>Study Task Manager</GradientText>
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
           {today.getFullYear()}年{today.getMonth() + 1}月{today.getDate()}日（
@@ -252,7 +253,7 @@ export default function Dashboard() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>達成率</div>
-              <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.2, marginTop: 4 }} className="gradient-text">{completionRate}%</div>
+              <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.2, marginTop: 4 }}><GradientText>{completionRate}%</GradientText></div>
             </div>
             <div style={{ padding: 8, borderRadius: 8, background: 'rgba(16,185,129,0.1)' }}>
               <TrendingUp size={20} color="var(--emerald)" />

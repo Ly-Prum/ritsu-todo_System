@@ -4,6 +4,7 @@ import { useStore } from '@/lib/store'
 import { DAY_LABELS } from '@/lib/utils'
 import type { DayOfWeek, TimetableSlot } from '@/lib/types'
 import { Plus, X, Trash2, Settings } from 'lucide-react'
+import GradientText from '@/components/GradientText'
 
 const WEEKDAYS: DayOfWeek[] = [1, 2, 3, 4, 5]
 
@@ -53,7 +54,7 @@ export default function TimetablePage() {
   return (
     <div style={{ padding: '20px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}><span className="gradient-text">時間割</span></h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}><GradientText>時間割</GradientText></h1>
         <button className="btn-secondary" onClick={() => { setEditPeriods([...periods]); setShowPeriodSettings(true) }}>
           <Settings size={14} /> 時限設定
         </button>
