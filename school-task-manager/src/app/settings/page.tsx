@@ -281,16 +281,12 @@ export default function SettingsPage() {
       {/* ヘッダーバナー */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🖼️ ヘッダーバナー</h2>
-        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 12 }}>
+        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: 'var(--surface-2)', border: '1px solid var(--border)', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {headerBanner ? (
             <img
               src={headerBanner}
               alt=""
               style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
                 width: `${(headerBannerZoom ?? 1) * 100}%`,
                 height: `${(headerBannerZoom ?? 1) * 100}%`,
                 maxWidth: 'none',
@@ -301,7 +297,7 @@ export default function SettingsPage() {
               }}
             />
           ) : (
-            <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: headerBanner ? 14 : 0 }}>
