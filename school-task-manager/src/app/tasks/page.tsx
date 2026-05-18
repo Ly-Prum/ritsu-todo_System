@@ -27,7 +27,7 @@ export default function TasksPage() {
   const [filterDate, setFilterDate] = useState<'all' | 'today' | 'week' | 'month' | 'overdue'>('all')
   const [search, setSearch] = useState('')
   const [showSubjectForm, setShowSubjectForm] = useState(false)
-  const [newSubject, setNewSubject] = useState({ name: '', color: SUBJECT_COLORS[0], teacher: '' })
+  const [newSubject, setNewSubject] = useState({ name: '', color: SUBJECT_COLORS[0] })
   const [quickTitle, setQuickTitle] = useState('')
   const [quickSubjectId, setQuickSubjectId] = useState('')
   const [quickDate, setQuickDate] = useState('')
@@ -51,11 +51,11 @@ export default function TasksPage() {
     if (filterPriority !== 'all' && task.priority !== filterPriority) return false
     if (search && !task.title.toLowerCase().includes(search.toLowerCase())) return false
     if (filterDate === 'today' && task.dueDate !== todayStr) return false
-    if (filterDate === 'week' && (task.dueDate < todayStr || task.dueDate > weekEndStr)) return false
-    if (filterDate === 'month' && (task.dueDate < todayStr || task.dueDate > monthEndStr)) return false
-    if (filterDate === 'overdue' && (task.status === 'completed' || task.dueDate >= todayStr)) return false
+    if (filterDate === 'week' && (!task.dueDate || task.dueDate < todayStr || task.dueDate > weekEndStr)) return false
+    if (filterDate === 'month' && (!task.dueDate || task.dueDate < todayStr || task.dueDate > monthEndStr)) return false
+    if (filterDate === 'overdue' && (task.status === 'completed' || !task.dueDate || task.dueDate >= todayStr)) return false
     return true
-  }).sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+  }).sort((a, b) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'))
 
   function openNew() {
     setForm({ ...emptyForm })
@@ -66,7 +66,7 @@ export default function TasksPage() {
   function openEdit(task: Task) {
     setForm({
       title: task.title, description: task.description ?? '',
-      subjectId: task.subjectId ?? '', dueDate: task.dueDate,
+      subjectId: task.subjectId ?? '', dueDate: task.dueDate ?? '',
       priority: task.priority, status: task.status, type: task.type,
       estimatedMinutes: task.estimatedMinutes?.toString() ?? '',
     })
@@ -75,12 +75,12 @@ export default function TasksPage() {
   }
 
   function save() {
-    if (!form.title.trim() || !form.dueDate) return
+    if (!form.title.trim()) return
     const data = {
       title: form.title.trim(),
       description: form.description.trim() || undefined,
       subjectId: form.subjectId || undefined,
-      dueDate: form.dueDate,
+      dueDate: form.dueDate || undefined,
       priority: form.priority,
       status: form.status,
       type: form.type,
@@ -98,17 +98,17 @@ export default function TasksPage() {
 
   function saveSubject() {
     if (!newSubject.name.trim()) return
-    addSubject({ name: newSubject.name.trim(), color: newSubject.color, teacher: newSubject.teacher.trim() || undefined })
-    setNewSubject({ name: '', color: SUBJECT_COLORS[0], teacher: '' })
+    addSubject({ name: newSubject.name.trim(), color: newSubject.color })
+    setNewSubject({ name: '', color: SUBJECT_COLORS[0] })
     setShowSubjectForm(false)
   }
 
   function quickAdd() {
-    if (!quickTitle.trim() || !quickDate) return
+    if (!quickTitle.trim()) return
     addTask({
       title: quickTitle.trim(),
       subjectId: quickSubjectId || undefined,
-      dueDate: quickDate,
+      dueDate: quickDate || undefined,
       priority: 'medium',
       status: 'pending',
       type: 'homework',
@@ -124,7 +124,7 @@ export default function TasksPage() {
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}>{t('tasks_title')}</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><span className="gradient-text">{t('tasks_title')}</span></h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
             {tasks.length}{t('tasks_stat_registered')} · {tasks.filter(task => task.status === 'completed').length}{t('tasks_stat_done')}
           </p>
@@ -171,7 +171,7 @@ export default function TasksPage() {
         <button
           className="btn-primary"
           onClick={quickAdd}
-          disabled={!quickTitle.trim() || !quickDate}
+          disabled={!quickTitle.trim()}
           style={{ flexShrink: 0 }}
         >
           <Plus size={14} /> 追加
@@ -327,7 +327,7 @@ export default function TasksPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label className="label">{t('tasks_duedate')}{t('lbl_required')}</label>
+                  <label className="label">{t('tasks_duedate')}{t('lbl_optional')}</label>
                   <input className="input" type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
                 </div>
                 <div>
@@ -353,7 +353,7 @@ export default function TasksPage() {
 
             <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'flex-end' }}>
               <button className="btn-secondary" onClick={() => setShowForm(false)}>{t('btn_cancel')}</button>
-              <button className="btn-primary" onClick={save} disabled={!form.title.trim() || !form.dueDate}>
+              <button className="btn-primary" onClick={save} disabled={!form.title.trim()}>
                 {editId ? t('btn_update') : t('btn_add')}
               </button>
             </div>
@@ -373,10 +373,6 @@ export default function TasksPage() {
               <div>
                 <label className="label">{t('tasks_subject_name')}{t('lbl_required')}</label>
                 <input className="input" value={newSubject.name} onChange={e => setNewSubject(s => ({ ...s, name: e.target.value }))} placeholder={t('tasks_subject_placeholder')} autoFocus />
-              </div>
-              <div>
-                <label className="label">{t('lbl_teacher')}</label>
-                <input className="input" value={newSubject.teacher} onChange={e => setNewSubject(s => ({ ...s, teacher: e.target.value }))} placeholder={t('tasks_teacher_placeholder')} />
               </div>
               <div>
                 <label className="label">{t('lbl_color')}</label>

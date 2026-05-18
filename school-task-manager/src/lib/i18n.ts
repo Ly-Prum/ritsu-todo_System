@@ -3,7 +3,7 @@ export type Lang = 'ja' | 'en'
 const ja = {
   // Navigation
   nav_dashboard: 'ダッシュボード',
-  nav_tasks: '課題・宿題',
+  nav_tasks: '課題・レポート',
   nav_calendar: 'カレンダー',
   nav_events: 'イベント',
   nav_links: 'マイリンク',
@@ -58,7 +58,7 @@ const ja = {
   status_completed: '完了',
 
   // Task types
-  type_homework: '宿題',
+  type_homework: '課題',
   type_exam: '試験',
   type_project: 'プロジェクト',
   type_report: 'レポート',
@@ -117,7 +117,7 @@ const ja = {
   dash_tab_faq: '⚠️ 注意・FAQ',
 
   // Tasks page
-  tasks_title: '課題・宿題',
+  tasks_title: '課題・レポート',
   tasks_add: '課題を追加',
   tasks_add_subject: '科目を追加',
   tasks_subject_add: '科目追加',

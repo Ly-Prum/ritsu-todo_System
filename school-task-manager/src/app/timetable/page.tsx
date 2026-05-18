@@ -53,7 +53,7 @@ export default function TimetablePage() {
   return (
     <div style={{ padding: '20px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>時間割</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}><span className="gradient-text">時間割</span></h1>
         <button className="btn-secondary" onClick={() => { setEditPeriods([...periods]); setShowPeriodSettings(true) }}>
           <Settings size={14} /> 時限設定
         </button>
@@ -114,7 +114,6 @@ export default function TimetablePage() {
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 14, color: subject.color }}>{subject.name}</div>
                       {slot?.room && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{slot.room}</div>}
-                      {subject.teacher && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{subject.teacher}</div>}
                       {slot?.credits && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{slot.credits}単位</div>}
                     </div>
                   ) : (
@@ -137,7 +136,6 @@ export default function TimetablePage() {
             <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
               <div style={{ width: 10, height: 10, borderRadius: 2, background: s.color }} />
               <span>{s.name}</span>
-              {s.teacher && <span style={{ color: 'var(--text-muted)' }}>({s.teacher})</span>}
             </div>
           ))}
         </div>

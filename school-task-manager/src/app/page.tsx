@@ -9,7 +9,7 @@ import {
 import Link from 'next/link'
 
 export default function Dashboard() {
-  const { tasks, subjects, quickTodos, addQuickTodo, updateQuickTodo, deleteQuickTodo, events } = useStore()
+  const { tasks, subjects, quickTodos, addQuickTodo, updateQuickTodo, deleteQuickTodo, addTask, updateTask, events } = useStore()
   const [todoInput, setTodoInput] = useState('')
   const [guideOpen, setGuideOpen] = useState(false)
   const [guideTab, setGuideTab] = useState<'start' | 'features' | 'faq'>('start')
@@ -28,9 +28,9 @@ export default function Dashboard() {
 
   const pending = tasks.filter(t => t.status !== 'completed')
   const completed = tasks.filter(t => t.status === 'completed')
-  const overdue = tasks.filter(t => t.status !== 'completed' && t.dueDate < todayStr)
+  const overdue = tasks.filter(t => t.status !== 'completed' && !!t.dueDate && t.dueDate < todayStr)
   const todayTasks = tasks.filter(t => t.dueDate === todayStr && t.status !== 'completed')
-  const weekTasks = tasks.filter(t => t.status !== 'completed' && t.dueDate >= todayStr && t.dueDate <= weekEndStr)
+  const weekTasks = tasks.filter(t => t.status !== 'completed' && !!t.dueDate && t.dueDate >= todayStr && t.dueDate <= weekEndStr)
 
   const completionRate = tasks.length > 0 ? Math.round((completed.length / tasks.length) * 100) : 0
 
@@ -38,7 +38,7 @@ export default function Dashboard() {
   const getSubjectColor = (id?: string) => subjects.find(s => s.id === id)?.color ?? '#8a92a6'
 
   const urgentTasks = pending
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .sort((a, b) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'))
     .slice(0, 6)
 
   const upcomingEvents = events
@@ -47,10 +47,21 @@ export default function Dashboard() {
     .slice(0, 5)
 
   const todayTodos = quickTodos.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  const quickTodoTitles = new Set(quickTodos.map(t => t.text))
+  const todayTasksFromStore = tasks.filter(
+    t => t.dueDate === todayStr && t.status !== 'completed' && !quickTodoTitles.has(t.title)
+  )
 
   function addTodo() {
     if (!todoInput.trim()) return
     addQuickTodo(todoInput.trim())
+    addTask({
+      title: todoInput.trim(),
+      dueDate: todayStr,
+      type: 'homework',
+      priority: 'medium',
+      status: 'pending',
+    })
     setTodoInput('')
   }
 
@@ -64,7 +75,7 @@ export default function Dashboard() {
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, marginBottom: 4 }}>
-          <span className="gradient-text">Ritsuki Dashboard</span>
+          <span className="gradient-text">Study Task Manager</span>
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
           {today.getFullYear()}年{today.getMonth() + 1}月{today.getDate()}日（
@@ -110,10 +121,10 @@ export default function Dashboard() {
               <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--emerald-light)', marginBottom: 12 }}>🚀 セットアップ手順</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
-                  { step: '1', title: '科目を登録する', detail: '「課題・宿題」ページ右上の「科目追加」ボタンから、受講している科目（英語・数学など）を登録します。カラーを設定しておくとカレンダーや時間割で見分けやすくなります。', link: '/tasks', linkLabel: '課題ページへ' },
+                  { step: '1', title: '科目を登録する', detail: '「課題・レポート」ページ右上の「科目追加」ボタンから、受講している科目（英語・数学など）を登録します。カラーを設定しておくとカレンダーや時間割で見分けやすくなります。', link: '/tasks', linkLabel: '課題ページへ' },
                   { step: '2', title: '時間割を登録する', detail: '「時間割」ページでセルをタップして科目を割り当てます。教室・担当教師・取得単位数も登録できます。右上「時限設定」で各時限の開始・終了時刻を変更できます。', link: '/timetable', linkLabel: '時間割ページへ' },
                   { step: '3', title: 'スクーリング・イベントを登録する', detail: '「イベント」ページでスクーリング日程・試験・面談などを登録します。アラームを設定すると締切前日・当日にブラウザ通知が届きます。「メモも作成する」にチェックを入れると詳細メモが自動生成されます。', link: '/events', linkLabel: 'イベントページへ' },
-                  { step: '4', title: '課題・宿題を登録する', detail: '「課題・宿題」ページで提出課題を登録します。科目・種別（宿題/試験/レポート）・締切日・優先度・予想所要時間を設定できます。ステータスを「進行中 → 完了」と更新してダッシュボードの達成率を上げましょう。', link: '/tasks', linkLabel: '課題ページへ' },
+                  { step: '4', title: '課題・レポートを登録する', detail: '「課題・レポート」ページで提出課題を登録します。科目・種別（課題/試験/レポート）・締切日（任意）・優先度・予想所要時間を設定できます。ステータスを「進行中 → 完了」と更新してダッシュボードの達成率を上げましょう。', link: '/tasks', linkLabel: '課題ページへ' },
                   { step: '5', title: 'マイリンクを整理する', detail: '「マイリンク」ページに Slack・Zenstudy・N Lobby・Zoom・Adobe など日常的に使うサービスをまとめています。「リンクを追加」から自分のツールを追加でき、カテゴリで整理できます。', link: '/links', linkLabel: 'マイリンクへ' },
                   { step: '6', title: 'Slack 通知を設定する（任意）', detail: '「設定・連携管理」ページで Slack の Incoming Webhook URL を登録すると、アラーム通知を Slack に送れます。部活・担任・メンターなど複数チャンネルを登録してメッセージを送ることもできます。', link: '/settings', linkLabel: '設定ページへ' },
                 ].map(({ step, title, detail, link, linkLabel }) => {
@@ -148,7 +159,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
                   { icon: '🏠', title: 'ダッシュボード（このページ）', items: ['クイック TODO：今日やることを素早くメモ', '統計カード：未完了・期限超過・達成率', '優先タスク：締切が近い課題を一覧表示', '今週のイベント：直近の予定を確認'] },
-                  { icon: '✅', title: '課題・宿題', items: ['課題の登録・編集・削除', '今日/今週/今月/期限切れでフィルター', 'ステータス管理（未着手→進行中→完了）', '科目・優先度・種別で絞り込み検索'] },
+                  { icon: '✅', title: '課題・レポート', items: ['課題の登録・編集・削除', '今日/今週/今月/期限切れでフィルター', 'ステータス管理（未着手→進行中→完了）', '科目・優先度・種別で絞り込み検索'] },
                   { icon: '📅', title: 'カレンダー', items: ['月表示で課題とイベントを一覧', '日付クリックで課題またはイベントを作成', '課題は科目カラーで色分け表示', 'イベントは別スタイルで区別表示'] },
                   { icon: '📌', title: 'イベント（スクーリング等）', items: ['スクーリング・試験・面談・イベントを登録', 'アラーム設定：1時間前/前日/3日前から選択', 'メモ自動生成：作成時に紐付きメモを作成', '開催場所・説明文も記録可能'] },
                   { icon: '🔗', title: 'マイリンク', items: ['Slack・Zenstudy・Adobe 等のショートカット', 'カテゴリ別に整理（N高/コミュニケーション等）', 'リンクは自由に追加・編集・削除できる'] },
@@ -292,7 +303,7 @@ export default function Dashboard() {
             <Plus size={14} />
           </button>
         </div>
-        {todayTodos.length === 0 ? (
+        {todayTodos.length === 0 && todayTasksFromStore.length === 0 ? (
           <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>
             TODOを追加してみましょう
           </div>
@@ -325,6 +336,33 @@ export default function Dashboard() {
                 </button>
               </div>
             ))}
+            {todayTasksFromStore.length > 0 && (
+              <>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, padding: '4px 2px 2px', borderTop: todayTodos.length > 0 ? '1px solid var(--border)' : 'none', marginTop: todayTodos.length > 0 ? 4 : 0 }}>
+                  📚 今日締切の課題
+                </div>
+                {todayTasksFromStore.map(task => (
+                  <div
+                    key={task.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 10px', borderRadius: 8,
+                      background: 'var(--surface-2)',
+                      borderLeft: `3px solid ${getSubjectColor(task.subjectId)}`,
+                    }}
+                  >
+                    <button
+                      onClick={() => updateTask(task.id, { status: 'completed' })}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--text-muted)', flexShrink: 0 }}
+                    >
+                      <div style={{ width: 18, height: 18, border: '2px solid var(--text-muted)', borderRadius: '50%' }} />
+                    </button>
+                    <span style={{ flex: 1, fontSize: 13 }}>{task.title}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{getSubjectName(task.subjectId)}</span>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>

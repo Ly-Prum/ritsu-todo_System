@@ -3,7 +3,7 @@ import { useState, useRef } from 'react'
 import { useStore } from '@/lib/store'
 import { EVENT_TYPE_LABELS, EVENT_COLORS } from '@/lib/utils'
 import type { AppEvent } from '@/lib/types'
-import { Plus, X, Pencil, Trash2, CalendarCheck, MapPin, Bell, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, X, Pencil, Trash2, CalendarCheck, MapPin, Bell, Clock, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
 
 type EventType = AppEvent['type']
 type FilterType = 'all' | EventType
@@ -304,10 +304,13 @@ export default function EventsPage() {
                       )}
                     </div>
                     <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                      <span>📅 {formatDate(ev.date)}{ev.endDate && ev.endDate !== ev.date ? ` 〜 ${formatDate(ev.endDate)}` : ''}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Calendar size={12} color="var(--sky)" style={{ flexShrink: 0 }} />
+                        {formatDate(ev.date)}{ev.endDate && ev.endDate !== ev.date ? ` 〜 ${formatDate(ev.endDate)}` : ''}
+                      </span>
                       {(ev.startTime || ev.endTime) && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                          <Clock size={11} />
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Clock size={12} color="var(--sky)" style={{ flexShrink: 0 }} />
                           {ev.startTime}{ev.endTime ? ` 〜 ${ev.endTime}` : ''}
                         </span>
                       )}

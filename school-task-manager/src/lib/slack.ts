@@ -9,13 +9,15 @@ function buildDailyDigestPayload(tasks: Task[], subjects: Subject[]) {
   const today = new Date().toISOString().split('T')[0]
   const pending = tasks.filter(t => t.status !== 'completed')
 
-  const overdue = pending.filter(t => t.dueDate < today)
+  const overdue = pending.filter(t => !!t.dueDate && t.dueDate < today)
   const dueToday = pending.filter(t => t.dueDate === today)
   const dueSoon = pending.filter(t => {
+    if (!t.dueDate) return false
     const d = getDaysUntilDue(t.dueDate)
     return d >= 1 && d <= 3
   })
   const upcoming = pending.filter(t => {
+    if (!t.dueDate) return false
     const d = getDaysUntilDue(t.dueDate)
     return d >= 4 && d <= 7
   })
@@ -71,8 +73,8 @@ function buildDailyDigestPayload(tasks: Task[], subjects: Subject[]) {
       text: { type: 'mrkdwn', text: `*🟡 3日以内（${dueSoon.length}件）*` },
     })
     dueSoon.forEach(t => {
-      const days = getDaysUntilDue(t.dueDate)
-      const due = new Date(t.dueDate + 'T00:00:00')
+      const days = getDaysUntilDue(t.dueDate!)
+      const due = new Date(t.dueDate! + 'T00:00:00')
       blocks.push({
         type: 'section',
         text: {

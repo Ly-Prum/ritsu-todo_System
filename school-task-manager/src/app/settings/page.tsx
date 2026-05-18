@@ -23,7 +23,7 @@ export default function SettingsPage() {
   const bgMobileRef = useRef<HTMLInputElement>(null)
   const [importMsg, setImportMsg] = useState('')
   const [showSubjectManager, setShowSubjectManager] = useState(false)
-  const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string; teacher: string } | null>(null)
+  const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string } | null>(null)
 
   // Slack general webhook
   const [slackUrl, setSlackUrl] = useState(store.integrations.slackWebhookUrl)
@@ -191,7 +191,7 @@ export default function SettingsPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 24px' }}>{t('set_title')}</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 24px' }}><span className="gradient-text">{t('set_title')}</span></h1>
 
       {/* 言語設定 */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
@@ -516,17 +516,15 @@ export default function SettingsPage() {
                       ))}
                     </div>
                     <input className="input" value={editSubject.name} onChange={e => setEditSubject(x => x ? { ...x, name: e.target.value } : x)} style={{ flex: 1 }} autoFocus />
-                    <input className="input" value={editSubject.teacher} onChange={e => setEditSubject(x => x ? { ...x, teacher: e.target.value } : x)} placeholder="担当教師" style={{ width: 120 }} />
-                    <button className="btn-primary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => { store.updateSubject(s.id, { name: editSubject.name, color: editSubject.color, teacher: editSubject.teacher || undefined }); setEditSubject(null) }}>保存</button>
+                    <button className="btn-primary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => { store.updateSubject(s.id, { name: editSubject.name, color: editSubject.color }); setEditSubject(null) }}>保存</button>
                     <button className="btn-ghost" onClick={() => setEditSubject(null)}><X size={14} /></button>
                   </>
                 ) : (
                   <>
                     <div style={{ width: 12, height: 12, borderRadius: 3, background: s.color, flexShrink: 0 }} />
                     <span style={{ flex: 1, fontSize: 14 }}>{s.name}</span>
-                    {s.teacher && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.teacher}</span>}
                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{tasks.filter(t => t.subjectId === s.id).length}件</span>
-                    <button className="btn-ghost" style={{ padding: '4px 6px' }} onClick={() => setEditSubject({ id: s.id, name: s.name, color: s.color, teacher: s.teacher ?? '' })}><Pencil size={13} /></button>
+                    <button className="btn-ghost" style={{ padding: '4px 6px' }} onClick={() => setEditSubject({ id: s.id, name: s.name, color: s.color })}><Pencil size={13} /></button>
                     <button className="btn-ghost" style={{ padding: '4px 6px', color: '#ef4444' }} onClick={() => { if (confirm(`「${s.name}」を削除しますか？`)) store.deleteSubject(s.id) }}><Trash2 size={13} /></button>
                   </>
                 )}

@@ -17,7 +17,7 @@ export interface Task {
   title: string
   description?: string
   subjectId?: string
-  dueDate: string
+  dueDate?: string
   priority: Priority
   status: TaskStatus
   type: TaskType

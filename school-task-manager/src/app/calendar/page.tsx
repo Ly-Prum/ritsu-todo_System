@@ -77,6 +77,7 @@ export default function CalendarPage() {
   }
 
   const tasksByDate = tasks.reduce<Record<string, typeof tasks>>((acc, task) => {
+    if (!task.dueDate) return acc
     acc[task.dueDate] = [...(acc[task.dueDate] ?? []), task]
     return acc
   }, {})
@@ -106,7 +107,7 @@ export default function CalendarPage() {
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{t('cal_title')}</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}><span className="gradient-text">{t('cal_title')}</span></h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button className="btn-secondary" onClick={prevMonth} style={{ padding: '6px 10px' }}><ChevronLeft size={16} /></button>
           <span style={{ fontSize: 16, fontWeight: 700, minWidth: 120, textAlign: 'center' }}>

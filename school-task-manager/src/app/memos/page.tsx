@@ -52,7 +52,7 @@ export default function MemosPage() {
     <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}>メモ</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><span className="gradient-text">メモ</span></h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{memos.length} 件のメモ</p>
         </div>
         <button className="btn-primary" onClick={openNew}><Plus size={14} /> 新しいメモ</button>
@@ -168,8 +168,10 @@ export default function MemosPage() {
                   {MEMO_COLORS.map(c => (
                     <button key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{
                       width: 28, height: 28, borderRadius: 6, background: c,
-                      border: form.color === c ? '3px solid var(--emerald)' : '2px solid rgba(0,0,0,0.1)',
+                      border: form.color === c ? '3px solid var(--emerald)' : '2px solid rgba(255,255,255,0.15)',
                       cursor: 'pointer',
+                      appearance: 'none', WebkitAppearance: 'none',
+                      outline: 'none', flexShrink: 0,
                     }} />
                   ))}
                 </div>

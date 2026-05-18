@@ -15,7 +15,7 @@ export const STATUS_COLORS = {
   completed: 'bg-teal-100 text-teal-700 border border-teal-200',
 }
 export const TYPE_LABELS = {
-  homework: '宿題',
+  homework: '課題',
   exam: '試験',
   project: 'プロジェクト',
   report: 'レポート',
@@ -51,7 +51,8 @@ export function getDaysUntilDue(dueDate: string): number {
   return Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-export function formatDueDate(dueDate: string): string {
+export function formatDueDate(dueDate?: string): string {
+  if (!dueDate) return '期限なし'
   const days = getDaysUntilDue(dueDate)
   const date = new Date(dueDate)
   const formatted = `${date.getMonth() + 1}/${date.getDate()}`
@@ -61,7 +62,8 @@ export function formatDueDate(dueDate: string): string {
   return `${formatted} (${days}日後)`
 }
 
-export function getDueDateColor(dueDate: string): string {
+export function getDueDateColor(dueDate?: string): string {
+  if (!dueDate) return 'text-zinc-400'
   const days = getDaysUntilDue(dueDate)
   if (days < 0) return 'text-rose-600 font-bold'
   if (days <= 1) return 'text-rose-500 font-semibold'

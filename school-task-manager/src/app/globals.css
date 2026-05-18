@@ -14,6 +14,7 @@
 }
 
 * { box-sizing: border-box; }
+button { -webkit-appearance: none; appearance: none; }
 
 html {
   background-color: var(--bg);
@@ -151,6 +152,8 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
+  display: inline-block;
 }
 
 .sidebar-link {

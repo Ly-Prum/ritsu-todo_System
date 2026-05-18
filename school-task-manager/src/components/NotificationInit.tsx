@@ -18,7 +18,7 @@ export default function NotificationInit() {
 
     // Check for tasks due today or tomorrow
     const urgent = tasks.filter(t => {
-      if (t.status === 'completed') return false
+      if (t.status === 'completed' || !t.dueDate) return false
       const days = getDaysUntilDue(t.dueDate)
       return days === 0 || days === 1
     })
@@ -31,8 +31,8 @@ export default function NotificationInit() {
 
     localStorage.setItem('last-notified-date', today)
 
-    const todayTasks = urgent.filter(t => getDaysUntilDue(t.dueDate) === 0)
-    const tomorrowTasks = urgent.filter(t => getDaysUntilDue(t.dueDate) === 1)
+    const todayTasks = urgent.filter(t => getDaysUntilDue(t.dueDate!) === 0)
+    const tomorrowTasks = urgent.filter(t => getDaysUntilDue(t.dueDate!) === 1)
 
     let body = ''
     if (todayTasks.length > 0) body += `今日締切: ${todayTasks.map(t => t.title).join('、')}\n`
