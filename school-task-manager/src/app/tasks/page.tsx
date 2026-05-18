@@ -525,7 +525,7 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
     textAlign: 'left', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
   }
   const td: React.CSSProperties = {
-    padding: '12px', fontSize: 13, borderBottom: '1px solid rgba(255,255,255,0.05)', verticalAlign: 'middle',
+    padding: '12px', fontSize: 13, borderBottom: '1px solid var(--border)', verticalAlign: 'middle',
   }
 
   if (subjects.length === 0) return (

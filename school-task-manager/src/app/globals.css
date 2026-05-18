@@ -36,18 +36,22 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .card {
-  background: rgba(15,15,20,0.72);
+  background: rgba(15,15,20,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.14);
   border-radius: 12px;
 }
 .card-2 {
-  background: rgba(23,23,30,0.72);
+  background: rgba(23,23,30,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 10px;
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .card  { background: #0f0f14; border-color: #2e2e40; }
+  .card-2 { background: #17171e; border-color: #2e2e40; }
 }
 
 .btn-primary {
