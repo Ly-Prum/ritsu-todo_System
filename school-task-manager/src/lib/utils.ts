@@ -4,15 +4,15 @@ export function generateId(): string {
 
 export const PRIORITY_LABELS = { low: '低', medium: '中', high: '高' }
 export const PRIORITY_COLORS = {
-  low: 'bg-sky-100 text-sky-700 border border-sky-200',
-  medium: 'bg-amber-100 text-amber-700 border border-amber-200',
-  high: 'bg-rose-100 text-rose-700 border border-rose-200',
+  low: 'bg-sky-100 text-sky-700 border border-sky-200 forced-color-adjust-none',
+  medium: 'bg-amber-100 text-amber-700 border border-amber-200 forced-color-adjust-none',
+  high: 'bg-rose-100 text-rose-700 border border-rose-200 forced-color-adjust-none',
 }
 export const STATUS_LABELS = { pending: '未着手', 'in-progress': '進行中', completed: '完了' }
 export const STATUS_COLORS = {
-  pending: 'bg-zinc-100 text-zinc-600 border border-zinc-200',
-  'in-progress': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  completed: 'bg-teal-100 text-teal-700 border border-teal-200',
+  pending: 'bg-zinc-100 text-zinc-600 border border-zinc-200 forced-color-adjust-none',
+  'in-progress': 'bg-emerald-100 text-emerald-700 border border-emerald-200 forced-color-adjust-none',
+  completed: 'bg-teal-100 text-teal-700 border border-teal-200 forced-color-adjust-none',
 }
 export const TYPE_LABELS = {
   homework: '課題',
