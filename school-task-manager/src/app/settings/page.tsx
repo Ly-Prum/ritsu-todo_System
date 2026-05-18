@@ -281,8 +281,28 @@ export default function SettingsPage() {
       {/* ヘッダーバナー */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🖼️ ヘッダーバナー</h2>
-        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: headerBanner ? `url(${headerBanner}) center ${headerBannerY}%/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 12 }}>
-          {!headerBanner && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>}
+        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 12 }}>
+          {headerBanner ? (
+            <img
+              src={headerBanner}
+              alt=""
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: `${(headerBannerZoom ?? 1) * 100}%`,
+                height: `${(headerBannerZoom ?? 1) * 100}%`,
+                maxWidth: 'none',
+                objectFit: 'cover',
+                objectPosition: `center ${headerBannerY}%`,
+                display: 'block',
+                flexShrink: 0,
+              }}
+            />
+          ) : (
+            <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: headerBanner ? 14 : 0 }}>
           <button className="btn-primary" onClick={() => bannerRef.current?.click()} style={{ fontSize: 13 }}>アップロード</button>

@@ -47,7 +47,7 @@ export default function HeaderBanner() {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const img = new Image()
+    const img = new window.Image()
     const url = URL.createObjectURL(file)
     img.onload = () => {
       const ratio = Math.min(1920 / img.width, 1, 1)
@@ -89,18 +89,26 @@ export default function HeaderBanner() {
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
       >
-        <div style={{
-          position: 'absolute',
-          width: `${(headerBannerZoom ?? 1) * 100}%`,
-          height: `${(headerBannerZoom ?? 1) * 100}%`,
-          top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundImage: `url(${headerBanner})`,
-          backgroundSize: 'cover',
-          backgroundPosition: `center ${headerBannerY}%`,
-          backgroundRepeat: 'no-repeat',
-          userSelect: 'none',
-        }} />
+        <img
+          src={headerBanner}
+          alt=""
+          draggable={false}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: `${(headerBannerZoom ?? 1) * 100}%`,
+            height: `${(headerBannerZoom ?? 1) * 100}%`,
+            maxWidth: 'none',
+            objectFit: 'cover',
+            objectPosition: `center ${headerBannerY}%`,
+            userSelect: 'none',
+            pointerEvents: 'none',
+            display: 'block',
+            flexShrink: 0,
+          }}
+        />
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
           background: 'linear-gradient(to bottom, transparent, var(--bg))',
