@@ -166,12 +166,10 @@ export default function MemosPage() {
                 <label className="label">カラー</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                   {MEMO_COLORS.map(c => (
-                    <button key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{
+                    <button key={c} className="color-swatch" onClick={() => setForm(f => ({ ...f, color: c }))} style={{
                       width: 28, height: 28, borderRadius: 6, background: c,
-                      border: form.color === c ? '3px solid var(--emerald)' : '2px solid rgba(255,255,255,0.15)',
-                      cursor: 'pointer',
-                      appearance: 'none', WebkitAppearance: 'none',
-                      outline: 'none', flexShrink: 0,
+                      border: form.color === c ? '3px solid #34d399' : '2px solid rgba(255,255,255,0.2)',
+                      flexShrink: 0,
                     }} />
                   ))}
                 </div>
