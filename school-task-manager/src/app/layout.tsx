@@ -8,6 +8,7 @@ import BottomNav from '@/components/BottomNav'
 import AlarmManager from '@/components/AlarmManager'
 import MobileHeader from '@/components/MobileHeader'
 import PWAUpdateNotifier from '@/components/PWAUpdateNotifier'
+import HeaderBanner from '@/components/HeaderBanner'
 
 export const metadata: Metadata = {
   title: 'Ritsuki Dashboard',
@@ -43,7 +44,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PWAUpdateNotifier />
         <div style={{ display: 'flex', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
           <Sidebar />
-          <main style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
+          <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <HeaderBanner />
             {children}
           </main>
           <BottomNav />

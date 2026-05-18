@@ -21,6 +21,7 @@ export default function SettingsPage() {
   const iconRef = useRef<HTMLInputElement>(null)
   const bgRef = useRef<HTMLInputElement>(null)
   const bgMobileRef = useRef<HTMLInputElement>(null)
+  const bannerRef = useRef<HTMLInputElement>(null)
   const [importMsg, setImportMsg] = useState('')
   const [showSubjectManager, setShowSubjectManager] = useState(false)
   const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string } | null>(null)
@@ -46,7 +47,7 @@ export default function SettingsPage() {
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
 
-  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile } = store
+  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, headerBanner, setHeaderBanner } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -87,6 +88,14 @@ export default function SettingsPage() {
     if (!file) return
     const compressed = await compressImage(file, 1080, 1920)
     setBgImageMobile(compressed)
+    e.target.value = ''
+  }
+
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const compressed = await compressImage(file, 1920, 400)
+    setHeaderBanner(compressed)
     e.target.value = ''
   }
 
@@ -266,6 +275,20 @@ export default function SettingsPage() {
           </div>
         )}
         <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '12px 0 0' }}>自動で圧縮します。このデバイス用の背景を設定できます。</p>
+      </div>
+
+      {/* ヘッダーバナー */}
+      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+        <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🖼️ ヘッダーバナー</h2>
+        <div style={{ width: '100%', height: 80, borderRadius: 8, overflow: 'hidden', background: headerBanner ? `url(${headerBanner}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 12 }}>
+          {!headerBanner && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>}
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn-primary" onClick={() => bannerRef.current?.click()} style={{ fontSize: 13 }}>アップロード</button>
+          {headerBanner && <button className="btn-ghost" onClick={() => setHeaderBanner('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
+        </div>
+        <input ref={bannerRef} type="file" accept="image/*" onChange={handleBannerUpload} style={{ display: 'none' }} />
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '10px 0 0' }}>全ページ上部に表示されるバナー画像です。横長の画像が適しています。</p>
       </div>
 
       {/* Stats */}
