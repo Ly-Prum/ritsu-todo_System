@@ -34,6 +34,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* Injected raw — bypasses Tailwind/Lightning CSS transform */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .gradient-text {
+            background: linear-gradient(135deg, #34d399 0%, #38bdf8 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            color: transparent !important;
+            display: inline-block !important;
+          }
+        ` }} />
       </head>
       <body style={{ margin: 0, minHeight: '100vh' }}>
         <BackgroundProvider />

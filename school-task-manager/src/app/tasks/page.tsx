@@ -378,9 +378,12 @@ export default function TasksPage() {
                 <label className="label">{t('lbl_color')}</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                   {SUBJECT_COLORS.map(c => (
-                    <div key={c} className="color-swatch" onClick={() => setNewSubject(s => ({ ...s, color: c }))} style={{
-                      '--swatch-color': c, width: 28, height: 28, borderRadius: '50%', border: newSubject.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
-                    } as React.CSSProperties} />
+                    <div key={c} onClick={() => setNewSubject(s => ({ ...s, color: c }))} style={{
+                      width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, overflow: 'hidden',
+                      border: newSubject.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
+                    }}>
+                      <span style={{ display: 'block', width: '100%', height: '100%', background: c }} />
+                    </div>
                   ))}
                 </div>
               </div>

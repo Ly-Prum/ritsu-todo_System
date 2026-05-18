@@ -280,7 +280,7 @@ export default function SettingsPage() {
       {/* ヘッダーバナー */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🖼️ ヘッダーバナー</h2>
-        <div style={{ width: '100%', height: 80, borderRadius: 8, overflow: 'hidden', background: headerBanner ? `url(${headerBanner}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 12 }}>
+        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: headerBanner ? `url(${headerBanner}) center ${headerBannerY}%/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 12 }}>
           {!headerBanner && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>}
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: headerBanner ? 14 : 0 }}>
@@ -551,7 +551,9 @@ export default function SettingsPage() {
                   <>
                     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                       {SUBJECT_COLORS.map(c => (
-                        <div key={c} className="color-swatch" onClick={() => setEditSubject(e => e ? { ...e, color: c } : e)} style={{ '--swatch-color': c, width: 18, height: 18, borderRadius: '50%', border: editSubject.color === c ? '2px solid white' : '1px solid rgba(255,255,255,0.2)' } as React.CSSProperties} />
+                        <div key={c} onClick={() => setEditSubject(e => e ? { ...e, color: c } : e)} style={{ width: 18, height: 18, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, overflow: 'hidden', border: editSubject.color === c ? '2px solid white' : '1px solid rgba(255,255,255,0.2)' }}>
+                          <span style={{ display: 'block', width: '100%', height: '100%', background: c }} />
+                        </div>
                       ))}
                     </div>
                     <input className="input" value={editSubject.name} onChange={e => setEditSubject(x => x ? { ...x, name: e.target.value } : x)} style={{ flex: 1 }} autoFocus />

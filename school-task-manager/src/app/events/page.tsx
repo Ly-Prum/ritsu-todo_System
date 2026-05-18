@@ -419,10 +419,12 @@ export default function EventsPage() {
                 <label className="label">カラー</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                   {EVENT_COLORS.map(c => (
-                    <div key={c} className="color-swatch" onClick={() => setForm(f => ({ ...f, color: c }))} style={{
-                      '--swatch-color': c, width: 28, height: 28, borderRadius: '50%',
+                    <div key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{
+                      width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, overflow: 'hidden',
                       border: form.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
-                    } as React.CSSProperties} />
+                    }}>
+                      <span style={{ display: 'block', width: '100%', height: '100%', background: c }} />
+                    </div>
                   ))}
                 </div>
               </div>
