@@ -34,7 +34,7 @@ export default function TasksPage() {
   const [quickDate, setQuickDate] = useState('')
   const quickDateRef = useRef<HTMLInputElement>(null)
   const [tab, setTab] = useState<'tasks' | 'progress'>('tasks')
-  const [progressEdit, setProgressEdit] = useState<{ id: string, totalReports: string, totalSessions: string, attended: string, registered: string } | null>(null)
+  const [progressEdit, setProgressEdit] = useState<{ id: string, totalReports: string, totalSessions: string, attended: string, registered: string, hasExam: boolean } | null>(null)
 
   const tPriority = (p: Priority) => ({ low: t('priority_low'), medium: t('priority_medium'), high: t('priority_high') }[p])
   const tStatus = (s: TaskStatus) => ({ pending: t('status_pending'), 'in-progress': t('status_inprogress'), completed: t('status_completed') }[s])
@@ -156,7 +156,7 @@ export default function TasksPage() {
       </div>
 
       {tab === 'progress' && (
-        <ProgressTable subjects={subjects} tasks={tasks} updateSubject={updateSubject} progressEdit={progressEdit} setProgressEdit={setProgressEdit} />
+        <ProgressTable subjects={subjects} tasks={tasks} updateSubject={updateSubject} addSubject={addSubject} progressEdit={progressEdit} setProgressEdit={setProgressEdit} />
       )}
 
       {tab === 'tasks' && <>
@@ -426,19 +426,87 @@ export default function TasksPage() {
   )
 }
 
+// ─── N Lobbyプリセット科目 ──────────────────────────────────────────
+const NLOBBY_SUBJECTS: Array<Omit<Subject, 'id'>> = [
+  { name: '現代の国語',             color: '#ef4444', totalReports: 6,  totalSessions: 2, registeredSessions: 2 },
+  { name: '言語文化',               color: '#f97316', totalReports: 9,  totalSessions: 2, registeredSessions: 2 },
+  { name: '地理総合',               color: '#eab308', totalReports: 6,  totalSessions: 2, registeredSessions: 2 },
+  { name: '歴史総合',               color: '#84cc16', totalReports: 6,  totalSessions: 2, registeredSessions: 2 },
+  { name: '公共',                   color: '#22c55e', totalReports: 6,  totalSessions: 2, registeredSessions: 2 },
+  { name: '数学I',                  color: '#06b6d4', totalReports: 12, totalSessions: 2, registeredSessions: 2 },
+  { name: '科学と人間生活',         color: '#3b82f6', totalReports: 6,  totalSessions: 4, registeredSessions: 4 },
+  { name: '体育I',                  color: '#8b5cf6', totalReports: 2,  totalSessions: 6, registeredSessions: 6 },
+  { name: '英語コミュニケーションI', color: '#ec4899', totalReports: 12, totalSessions: 6, registeredSessions: 6 },
+  { name: '家庭基礎',               color: '#f43f5e', totalReports: 4,  totalSessions: 2, registeredSessions: 2 },
+  { name: '情報I',                  color: '#14b8a6', totalReports: 4,  totalSessions: 2, registeredSessions: 2 },
+  { name: '総合的な探究の時間I',    color: '#a78bfa', totalReports: 1,  totalSessions: 2, registeredSessions: 2, hasExam: false },
+  { name: '特別活動I',              color: '#fb923c', totalReports: 1,  totalSessions: 6, registeredSessions: 6, hasExam: false },
+]
+
+// ─── ゲージカード ────────────────────────────────────────────────────
+function GaugeCard({ label, value, total, color, subtitle }: {
+  label: string; value: number; total: number; color: string; subtitle: string
+}) {
+  const p = total > 0 ? Math.min(value / total, 1) : 0
+  const r = 42
+  const theta = Math.PI * (1 + p)
+  const ex = (50 + r * Math.cos(theta)).toFixed(1)
+  const ey = (-r * Math.sin(theta)).toFixed(1)
+  const la = p > 0.5 ? 1 : 0
+  const pct = total > 0 ? Math.round(p * 100) : 0
+  return (
+    <div style={{
+      background: 'var(--surface-2)', borderRadius: 12, padding: '14px 12px 10px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 130,
+    }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6, textAlign: 'center' }}>{label}</div>
+      <svg width="88" height="44" viewBox="4 -6 92 52" style={{ display: 'block' }}>
+        <path d="M 8 0 A 42 42 0 0 1 92 0"
+          fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" strokeLinecap="round" />
+        {p > 0.001 && (
+          <path d={`M 8 0 A ${r} ${r} 0 ${la} 1 ${ex} ${ey}`}
+            fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" />
+        )}
+      </svg>
+      <div style={{ fontSize: 20, fontWeight: 800, color, marginTop: 2 }}>{pct}%</div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, textAlign: 'center' }}>{subtitle}</div>
+    </div>
+  )
+}
+
 // ─── 修得管理テーブル ───────────────────────────────────────────────
-function ProgressTable({ subjects, tasks, updateSubject, progressEdit, setProgressEdit }: {
+function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdit, setProgressEdit }: {
   subjects: Subject[]
   tasks: Task[]
   updateSubject: (id: string, updates: Partial<Subject>) => void
-  progressEdit: { id: string, totalReports: string, totalSessions: string, attended: string, registered: string } | null
+  addSubject: (s: Omit<Subject, 'id'>) => void
+  progressEdit: { id: string, totalReports: string, totalSessions: string, attended: string, registered: string, hasExam: boolean } | null
   setProgressEdit: (v: typeof progressEdit) => void
 }) {
-  if (subjects.length === 0) return (
-    <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
-      科目を追加してから修得管理を使用してください
-    </div>
-  )
+  const totalReportCount = subjects.reduce((sum, s) => sum + (s.totalReports ?? 0), 0)
+  const doneReportCount = subjects.reduce((sum, s) =>
+    sum + tasks.filter(t => t.subjectId === s.id && t.type === 'report' && t.status === 'completed').length, 0)
+  const totalSessionCount = subjects.reduce((sum, s) => sum + (s.totalSessions ?? 0), 0)
+  const doneSessionCount = subjects.reduce((sum, s) => sum + (s.attendedSessions ?? 0) + (s.registeredSessions ?? 0), 0)
+  const examSubjects = subjects.filter(s => s.hasExam !== false)
+  const doneExamCount = examSubjects.filter(s =>
+    tasks.some(t => t.subjectId === s.id && t.type === 'exam' && t.status === 'completed')).length
+  const masteredCount = subjects.filter(s => {
+    const completed = tasks.filter(t => t.subjectId === s.id && t.type === 'report' && t.status === 'completed').length
+    const examDone = tasks.some(t => t.subjectId === s.id && t.type === 'exam' && t.status === 'completed')
+    const att = (s.attendedSessions ?? 0) + (s.registeredSessions ?? 0)
+    const repDone = s.totalReports != null && completed >= s.totalReports
+    const sessDone = s.totalSessions != null && att >= s.totalSessions
+    return s.hasExam === false ? repDone && sessDone : examDone && repDone && sessDone
+  }).length
+
+  function loadPreset() {
+    const existingNames = new Set(subjects.map(s => s.name))
+    const toAdd = NLOBBY_SUBJECTS.filter(s => !existingNames.has(s.name))
+    if (toAdd.length === 0) return
+    if (!confirm(`N Lobbyの${toAdd.length}科目を追加しますか？`)) return
+    toAdd.forEach(s => addSubject(s))
+  }
 
   function saveProgress() {
     if (!progressEdit) return
@@ -447,6 +515,7 @@ function ProgressTable({ subjects, tasks, updateSubject, progressEdit, setProgre
       totalSessions: progressEdit.totalSessions ? Number(progressEdit.totalSessions) : undefined,
       attendedSessions: Number(progressEdit.attended) || 0,
       registeredSessions: Number(progressEdit.registered) || 0,
+      hasExam: progressEdit.hasExam,
     })
     setProgressEdit(null)
   }
@@ -459,8 +528,41 @@ function ProgressTable({ subjects, tasks, updateSubject, progressEdit, setProgre
     padding: '12px', fontSize: 13, borderBottom: '1px solid rgba(255,255,255,0.05)', verticalAlign: 'middle',
   }
 
+  if (subjects.length === 0) return (
+    <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+      <div style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 16 }}>
+        N Lobbyの13科目を一括登録できます
+      </div>
+      <button className="btn-primary" onClick={loadPreset}>
+        N Lobbyプリセットを読み込む
+      </button>
+    </div>
+  )
+
+  const hasUnloaded = NLOBBY_SUBJECTS.some(s => !subjects.find(e => e.name === s.name))
+
   return (
     <>
+      {/* サマリーカード */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+        <GaugeCard label="年間レポート" value={doneReportCount} total={totalReportCount}
+          color="var(--emerald)" subtitle={`提出済${doneReportCount}/全${totalReportCount}回`} />
+        <GaugeCard label="スクーリング" value={doneSessionCount} total={totalSessionCount}
+          color="var(--sky)" subtitle={`出席+申込${doneSessionCount}/必要${totalSessionCount}コマ`} />
+        <GaugeCard label="テスト(試験)" value={doneExamCount} total={examSubjects.length}
+          color="#f59e0b" subtitle={`受験済${doneExamCount}/${examSubjects.length}科目`} />
+        <GaugeCard label="修得状況" value={masteredCount} total={subjects.length}
+          color="#a78bfa" subtitle={`修得済${masteredCount}/${subjects.length}科目`} />
+      </div>
+
+      {hasUnloaded && (
+        <div style={{ marginBottom: 12, textAlign: 'right' }}>
+          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={loadPreset}>
+            N Lobbyプリセットを追加
+          </button>
+        </div>
+      )}
+
       <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
           <thead>
@@ -487,21 +589,27 @@ function ProgressTable({ subjects, tasks, updateSubject, progressEdit, setProgre
               const schoolingDone = totalSessions !== null && (attended + registered) >= totalSessions
               const canExam = reportsDone && schoolingDone
 
-              const examLabel = totalReports === null && totalSessions === null
-                ? <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>未設定</span>
-                : !canExam
-                  ? <span style={{ fontSize: 12, color: '#f59e0b' }}>{[!reportsDone && 'レポート未完', !schoolingDone && 'スクーリング未完'].filter(Boolean).join('・')}</span>
-                  : examDone
-                    ? <span style={{ fontSize: 12, color: 'var(--emerald)' }}>✓ 受験済</span>
-                    : <span style={{ fontSize: 12, color: 'var(--sky)' }}>受験可</span>
+              const examLabel = s.hasExam === false
+                ? <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>テストなし</span>
+                : totalReports === null && totalSessions === null
+                  ? <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>未設定</span>
+                  : !canExam
+                    ? <span style={{ fontSize: 12, color: '#f59e0b' }}>{[!reportsDone && 'レポート未完', !schoolingDone && 'スクーリング未完'].filter(Boolean).join('・')}</span>
+                    : examDone
+                      ? <span style={{ fontSize: 12, color: 'var(--emerald)' }}>✓ 受験済</span>
+                      : <span style={{ fontSize: 12, color: 'var(--sky)' }}>受験可</span>
 
-              const statusLabel = totalReports === null && totalSessions === null
-                ? { text: '未設定', color: 'var(--text-muted)' }
-                : examDone && canExam
-                  ? { text: '修得', color: 'var(--emerald)' }
-                  : canExam
-                    ? { text: '受験待ち', color: 'var(--sky)' }
-                    : { text: '判定前', color: 'var(--text-muted)' }
+              const statusLabel = s.hasExam === false
+                ? (reportsDone && schoolingDone
+                    ? { text: '修得', color: 'var(--emerald)' }
+                    : { text: '判定前', color: 'var(--text-muted)' })
+                : totalReports === null && totalSessions === null
+                  ? { text: '未設定', color: 'var(--text-muted)' }
+                  : examDone && canExam
+                    ? { text: '修得', color: 'var(--emerald)' }
+                    : canExam
+                      ? { text: '受験待ち', color: 'var(--sky)' }
+                      : { text: '判定前', color: 'var(--text-muted)' }
 
               return (
                 <tr key={s.id} style={{ transition: 'background 0.15s' }} className="hover:bg-white/[0.02]">
@@ -539,6 +647,7 @@ function ProgressTable({ subjects, tasks, updateSubject, progressEdit, setProgre
                         totalSessions: s.totalSessions?.toString() ?? '',
                         attended: (s.attendedSessions ?? 0).toString(),
                         registered: (s.registeredSessions ?? 0).toString(),
+                        hasExam: s.hasExam !== false,
                       })}
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -562,6 +671,12 @@ function ProgressTable({ subjects, tasks, updateSubject, progressEdit, setProgre
               <button className="btn-ghost" onClick={() => setProgressEdit(null)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <label className="label" style={{ margin: 0 }}>テスト(試験)あり</label>
+                <input type="checkbox" checked={progressEdit.hasExam}
+                  onChange={e => setProgressEdit({ ...progressEdit, hasExam: e.target.checked })}
+                  style={{ width: 16, height: 16, cursor: 'pointer' }} />
+              </div>
               <div>
                 <label className="label">全レポート回数</label>
                 <input className="input" type="number" min={0} placeholder="例: 6"

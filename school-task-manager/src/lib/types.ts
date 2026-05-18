@@ -14,6 +14,7 @@ export interface Subject {
   totalSessions?: number
   attendedSessions?: number
   registeredSessions?: number
+  hasExam?: boolean
 }
 
 export interface Task {
