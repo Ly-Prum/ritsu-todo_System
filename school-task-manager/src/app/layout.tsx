@@ -43,6 +43,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             background-clip: text !important;
             color: transparent !important;
             display: inline-block !important;
+            -webkit-font-smoothing: antialiased !important;
+          }
+          .color-swatch-inner {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
           }
         ` }} />
       </head>

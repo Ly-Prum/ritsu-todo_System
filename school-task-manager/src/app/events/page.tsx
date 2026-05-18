@@ -305,12 +305,12 @@ export default function EventsPage() {
                     </div>
                     <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Calendar size={12} color="var(--sky)" style={{ flexShrink: 0 }} />
+                        <Calendar size={15} color="var(--sky-light)" style={{ flexShrink: 0 }} />
                         {formatDate(ev.date)}{ev.endDate && ev.endDate !== ev.date ? ` 〜 ${formatDate(ev.endDate)}` : ''}
                       </span>
                       {(ev.startTime || ev.endTime) && (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Clock size={12} color="var(--sky)" style={{ flexShrink: 0 }} />
+                          <Clock size={15} color="var(--sky-light)" style={{ flexShrink: 0 }} />
                           {ev.startTime}{ev.endTime ? ` 〜 ${ev.endTime}` : ''}
                         </span>
                       )}
