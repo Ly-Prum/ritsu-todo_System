@@ -50,7 +50,7 @@ export default function MemosPage() {
   }
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
+    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><GradientText>メモ</GradientText></h1>

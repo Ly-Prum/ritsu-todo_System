@@ -60,7 +60,7 @@ export default function Sidebar() {
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
         {links.map(({ href, icon: Icon, label }) => (
-          <Link key={href} href={href} className={`sidebar-link ${pathname === href ? 'active' : ''}`}>
+          <Link key={href} href={href} className={`sidebar-link ${pathname === href ? 'active' : ''} active:bg-linear-to-br active:from-[#34d399]/25 active:to-[#38bdf8]/25 active:text-white active:border-[rgba(16,185,129,0.3)]`}>
             <Icon size={18} />
             <span>{label}</span>
           </Link>

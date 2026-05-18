@@ -52,7 +52,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div style={{ padding: '20px 14px', maxWidth: 1600, margin: '0 auto' }}>
+    <div style={{ padding: '20px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, marginBottom: 4 }}>

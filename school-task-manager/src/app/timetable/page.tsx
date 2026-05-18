@@ -52,7 +52,7 @@ export default function TimetablePage() {
   const getSubject = (id: string) => subjects.find(s => s.id === id)
 
   return (
-    <div style={{ padding: '20px 14px', maxWidth: 1600, margin: '0 auto' }}>
+    <div style={{ padding: '20px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}><GradientText>時間割</GradientText></h1>
         <button className="btn-secondary" onClick={() => { setEditPeriods([...periods]); setShowPeriodSettings(true) }}>
