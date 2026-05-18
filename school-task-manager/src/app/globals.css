@@ -35,17 +35,13 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .card {
-  background: rgba(15,15,20,0.62);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  border: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
 .card-2 {
-  background: rgba(23,23,30,0.62);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  border: none;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 10px;
 }
 
@@ -157,6 +153,7 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
 }
 
 .color-swatch {
+  background-color: var(--swatch-color, #888) !important;
   cursor: pointer;
   padding: 0;
   display: inline-block;
@@ -187,8 +184,7 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.75);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -220,10 +216,8 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
 }
 
 .stat-card {
-  background: rgba(15,15,20,0.62);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  border: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
   position: relative;
@@ -241,12 +235,10 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
   min-height: 120px;
   padding: 8px;
   border: 1px solid rgba(255,255,255,0.06);
-  background: rgba(15,15,20,0.55);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: var(--surface);
   transition: background 0.15s;
 }
-.calendar-day:hover { background: rgba(23,23,30,0.7); }
+.calendar-day:hover { background: var(--surface-2); }
 .calendar-day.today { border-color: var(--emerald); }
 .calendar-day.other-month { opacity: 0.4; }
 

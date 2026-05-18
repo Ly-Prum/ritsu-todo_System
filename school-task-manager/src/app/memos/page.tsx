@@ -167,9 +167,9 @@ export default function MemosPage() {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                   {MEMO_COLORS.map(c => (
                     <div key={c} className="color-swatch" onClick={() => setForm(f => ({ ...f, color: c }))} style={{
-                      width: 28, height: 28, borderRadius: 6, backgroundColor: c,
+                      '--swatch-color': c, width: 28, height: 28, borderRadius: 6,
                       border: form.color === c ? '3px solid #34d399' : '2px solid rgba(255,255,255,0.2)',
-                    }} />
+                    } as React.CSSProperties} />
                   ))}
                 </div>
               </div>

@@ -379,8 +379,8 @@ export default function TasksPage() {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                   {SUBJECT_COLORS.map(c => (
                     <div key={c} className="color-swatch" onClick={() => setNewSubject(s => ({ ...s, color: c }))} style={{
-                      width: 28, height: 28, borderRadius: '50%', backgroundColor: c, border: newSubject.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
-                    }} />
+                      '--swatch-color': c, width: 28, height: 28, borderRadius: '50%', border: newSubject.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
+                    } as React.CSSProperties} />
                   ))}
                 </div>
               </div>

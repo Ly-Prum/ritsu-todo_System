@@ -512,7 +512,7 @@ export default function SettingsPage() {
                   <>
                     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                       {SUBJECT_COLORS.map(c => (
-                        <div key={c} className="color-swatch" onClick={() => setEditSubject(e => e ? { ...e, color: c } : e)} style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: c, border: editSubject.color === c ? '2px solid white' : '1px solid rgba(255,255,255,0.2)' }} />
+                        <div key={c} className="color-swatch" onClick={() => setEditSubject(e => e ? { ...e, color: c } : e)} style={{ '--swatch-color': c, width: 18, height: 18, borderRadius: '50%', border: editSubject.color === c ? '2px solid white' : '1px solid rgba(255,255,255,0.2)' } as React.CSSProperties} />
                       ))}
                     </div>
                     <input className="input" value={editSubject.name} onChange={e => setEditSubject(x => x ? { ...x, name: e.target.value } : x)} style={{ flex: 1 }} autoFocus />

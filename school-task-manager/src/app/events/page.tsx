@@ -420,9 +420,9 @@ export default function EventsPage() {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                   {EVENT_COLORS.map(c => (
                     <div key={c} className="color-swatch" onClick={() => setForm(f => ({ ...f, color: c }))} style={{
-                      width: 28, height: 28, borderRadius: '50%', backgroundColor: c,
+                      '--swatch-color': c, width: 28, height: 28, borderRadius: '50%',
                       border: form.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
-                    }} />
+                    } as React.CSSProperties} />
                   ))}
                 </div>
               </div>
