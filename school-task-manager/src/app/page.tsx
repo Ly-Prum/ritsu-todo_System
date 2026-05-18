@@ -4,13 +4,12 @@ import { useStore } from '@/lib/store'
 import { formatDueDate, getDueDateColor, PRIORITY_LABELS, PRIORITY_COLORS, TYPE_LABELS, EVENT_TYPE_LABELS } from '@/lib/utils'
 import {
   CheckCircle2, Clock, AlertTriangle, BookOpen, TrendingUp,
-  CalendarDays, Plus, Trash2, ChevronDown, ChevronUp, CalendarCheck
+  CalendarDays, Plus, ChevronDown, ChevronUp, CalendarCheck
 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Dashboard() {
-  const { tasks, subjects, quickTodos, addQuickTodo, updateQuickTodo, deleteQuickTodo, addTask, updateTask, events } = useStore()
-  const [todoInput, setTodoInput] = useState('')
+  const { tasks, subjects, events } = useStore()
   const [guideOpen, setGuideOpen] = useState(false)
   const [guideTab, setGuideTab] = useState<'start' | 'features' | 'faq'>('start')
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
@@ -45,25 +44,6 @@ export default function Dashboard() {
     .filter(e => e.date >= todayStr && e.date <= weekEndStr)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 5)
-
-  const todayTodos = quickTodos.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-  const quickTodoTitles = new Set(quickTodos.map(t => t.text))
-  const todayTasksFromStore = tasks.filter(
-    t => t.dueDate === todayStr && t.status !== 'completed' && !quickTodoTitles.has(t.title)
-  )
-
-  function addTodo() {
-    if (!todoInput.trim()) return
-    addQuickTodo(todoInput.trim())
-    addTask({
-      title: todoInput.trim(),
-      dueDate: todayStr,
-      type: 'homework',
-      priority: 'medium',
-      status: 'pending',
-    })
-    setTodoInput('')
-  }
 
   function formatEventDate(date: string) {
     const d = new Date(date + 'T00:00:00')
@@ -158,7 +138,7 @@ export default function Dashboard() {
               <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sky-light)', marginBottom: 12 }}>📋 各ページの機能一覧</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
-                  { icon: '🏠', title: 'ダッシュボード（このページ）', items: ['クイック TODO：今日やることを素早くメモ', '統計カード：未完了・期限超過・達成率', '優先タスク：締切が近い課題を一覧表示', '今週のイベント：直近の予定を確認'] },
+                  { icon: '🏠', title: 'ダッシュボード（このページ）', items: ['統計カード：未完了・期限超過・達成率', '今日の締切：当日が締切の課題を表示', '優先タスク：締切が近い課題を一覧表示', '今週のイベント：直近の予定を確認'] },
                   { icon: '✅', title: '課題・レポート', items: ['課題の登録・編集・削除', '今日/今週/今月/期限切れでフィルター', 'ステータス管理（未着手→進行中→完了）', '科目・優先度・種別で絞り込み検索'] },
                   { icon: '📅', title: 'カレンダー', items: ['月表示で課題とイベントを一覧', '日付クリックで課題またはイベントを作成', '課題は科目カラーで色分け表示', 'イベントは別スタイルで区別表示'] },
                   { icon: '📌', title: 'イベント（スクーリング等）', items: ['スクーリング・試験・面談・イベントを登録', 'アラーム設定：1時間前/前日/3日前から選択', 'メモ自動生成：作成時に紐付きメモを作成', '開催場所・説明文も記録可能'] },
@@ -282,89 +262,6 @@ export default function Dashboard() {
             <div className="progress-bar-fill" style={{ width: `${completionRate}%` }} />
           </div>
         </div>
-      </div>
-
-      {/* Quick TODO */}
-      <div className="card" style={{ padding: 16, marginBottom: 20 }}>
-        <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-          ✅ クイックTODO
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>今日やること</span>
-        </h3>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <input
-            className="input"
-            placeholder="やることを入力..."
-            value={todoInput}
-            onChange={e => setTodoInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTodo()}
-            style={{ flex: 1 }}
-          />
-          <button className="btn-primary" onClick={addTodo} disabled={!todoInput.trim()}>
-            <Plus size={14} />
-          </button>
-        </div>
-        {todayTodos.length === 0 && todayTasksFromStore.length === 0 ? (
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>
-            TODOを追加してみましょう
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {todayTodos.map(todo => (
-              <div
-                key={todo.id}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '8px 10px', borderRadius: 8,
-                  background: 'var(--surface-2)',
-                  opacity: todo.completed ? 0.6 : 1,
-                }}
-              >
-                <button
-                  onClick={() => updateQuickTodo(todo.id, { completed: !todo.completed })}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: todo.completed ? 'var(--emerald)' : 'var(--text-muted)', flexShrink: 0 }}
-                >
-                  {todo.completed ? <CheckCircle2 size={18} /> : <div style={{ width: 18, height: 18, border: '2px solid var(--text-muted)', borderRadius: '50%' }} />}
-                </button>
-                <span style={{ flex: 1, fontSize: 13, textDecoration: todo.completed ? 'line-through' : 'none' }}>
-                  {todo.text}
-                </span>
-                <button
-                  onClick={() => deleteQuickTodo(todo.id)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, flexShrink: 0 }}
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            ))}
-            {todayTasksFromStore.length > 0 && (
-              <>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, padding: '4px 2px 2px', borderTop: todayTodos.length > 0 ? '1px solid var(--border)' : 'none', marginTop: todayTodos.length > 0 ? 4 : 0 }}>
-                  📚 今日締切の課題
-                </div>
-                {todayTasksFromStore.map(task => (
-                  <div
-                    key={task.id}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '8px 10px', borderRadius: 8,
-                      background: 'var(--surface-2)',
-                      borderLeft: `3px solid ${getSubjectColor(task.subjectId)}`,
-                    }}
-                  >
-                    <button
-                      onClick={() => updateTask(task.id, { status: 'completed' })}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--text-muted)', flexShrink: 0 }}
-                    >
-                      <div style={{ width: 18, height: 18, border: '2px solid var(--text-muted)', borderRadius: '50%' }} />
-                    </button>
-                    <span style={{ flex: 1, fontSize: 13 }}>{task.title}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{getSubjectName(task.subjectId)}</span>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Upcoming events */}
