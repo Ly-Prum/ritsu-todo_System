@@ -74,84 +74,88 @@ export default function HeaderBanner() {
   }
 
   return (
-    <div
-      style={{
-        position: 'relative', width: '100%', height: headerBannerHeight,
-        flexShrink: 0, overflow: 'hidden',
-        cursor: repositioning ? (dragging ? 'grabbing' : 'grab') : 'default',
-        transition: 'height 0.2s',
-      }}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => { setHovering(false); setDragging(false) }}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-    >
-      <img
-        src={headerBanner} alt="" draggable={false}
+    <div style={{ position: 'relative', width: '100%', flexShrink: 0 }}>
+      {/* バナー本体 */}
+      <div
         style={{
-          width: '100%', height: '100%', objectFit: 'cover',
-          objectPosition: `center ${headerBannerY}%`,
-          display: 'block', userSelect: 'none',
-          transform: `scale(${headerBannerZoom})`,
-          transformOrigin: 'center center',
+          position: 'relative', width: '100%', height: headerBannerHeight,
+          overflow: 'hidden',
+          cursor: repositioning ? (dragging ? 'grabbing' : 'grab') : 'default',
+          transition: 'height 0.2s',
         }}
-      />
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-        background: 'linear-gradient(to bottom, transparent, var(--bg))',
-        pointerEvents: 'none',
-      }} />
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => { setHovering(false); setDragging(false) }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+      >
+        <img
+          src={headerBanner} alt="" draggable={false}
+          style={{
+            width: '100%', height: '100%', objectFit: 'cover',
+            objectPosition: `center ${headerBannerY}%`,
+            display: 'block', userSelect: 'none',
+            transform: `scale(${headerBannerZoom ?? 1})`,
+            transformOrigin: 'center center',
+          }}
+        />
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+          background: 'linear-gradient(to bottom, transparent, var(--bg))',
+          pointerEvents: 'none',
+        }} />
 
-      {/* 位置調整モード */}
+        {/* 位置調整モード — バナー内ボタン */}
+        {repositioning && (
+          <>
+            <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+              <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeY('up') }}>▲</button>
+            </div>
+            <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+              <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeY('down') }}>▼</button>
+            </div>
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'rgba(0,0,0,0.5)', color: 'white',
+              padding: '5px 14px', borderRadius: 20, fontSize: 11,
+              pointerEvents: 'none', whiteSpace: 'nowrap',
+            }}>
+              ▲▼ 上下位置　ドラッグで移動
+            </div>
+          </>
+        )}
+
+        {/* ホバー時ボタン */}
+        {hovering && !repositioning && (
+          <div style={{ position: 'absolute', bottom: 10, right: 12, display: 'flex', gap: 6, zIndex: 10 }}>
+            <button style={btn} onClick={e => { e.stopPropagation(); setRepositioning(true) }}>↕ 調整</button>
+            <button style={btn} onClick={e => { e.stopPropagation(); fileRef.current?.click() }}>🖼 変更</button>
+            <button style={{ ...btn, background: 'rgba(239,68,68,0.7)' }}
+              onClick={e => { e.stopPropagation(); setHeaderBanner('') }}>削除</button>
+          </div>
+        )}
+      </div>
+
+      {/* 調整パネル — overflow: hidden の外側に配置 */}
       {repositioning && (
-        <>
-          {/* 上下位置 */}
-          <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeY('up') }}>▲</button>
-          </div>
-          <div style={{ position: 'absolute', bottom: 44, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeY('down') }}>▼</button>
-          </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 12px',
+          background: 'rgba(0,0,0,0.8)',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginRight: 4 }}>高さ</span>
+          <button style={squareBtn} onClick={() => nudgeH('larger')}>＋</button>
+          <button style={squareBtn} onClick={() => nudgeH('smaller')}>－</button>
 
-          {/* 高さ調整（左） */}
-          <div style={{ position: 'absolute', top: '50%', left: 12, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 6, zIndex: 10 }}>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeH('larger') }} title="高く">↕＋</button>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeH('smaller') }} title="低く">↕－</button>
-          </div>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: '0 4px 0 12px' }}>ズーム</span>
+          <button style={squareBtn} onClick={() => nudgeZoom('in')}>＋</button>
+          <button style={squareBtn} onClick={() => nudgeZoom('out')}>－</button>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{Math.round((headerBannerZoom ?? 1) * 100)}%</span>
 
-          {/* ズーム調整（右） */}
-          <div style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 6, zIndex: 10 }}>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeZoom('in') }} title="拡大">🔍＋</button>
-            <button style={squareBtn} onClick={e => { e.stopPropagation(); nudgeZoom('out') }} title="縮小">🔍－</button>
-          </div>
-
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'rgba(0,0,0,0.5)', color: 'white',
-            padding: '5px 14px', borderRadius: 20, fontSize: 11,
-            pointerEvents: 'none', whiteSpace: 'nowrap',
-          }}>
-            ▲▼ 位置　↕± 高さ　🔍± ズーム　ドラッグ移動
-          </div>
-
-          <div style={{ position: 'absolute', bottom: 10, right: 12, zIndex: 10 }}>
-            <button style={{ ...btn, background: 'rgba(16,185,129,0.85)' }}
-              onClick={e => { e.stopPropagation(); setRepositioning(false) }}>
-              完了
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* ホバー時ボタン */}
-      {hovering && !repositioning && (
-        <div style={{ position: 'absolute', bottom: 10, right: 12, display: 'flex', gap: 6, zIndex: 10 }}>
-          <button style={btn} onClick={e => { e.stopPropagation(); setRepositioning(true) }}>↕ 位置・サイズ</button>
-          <button style={btn} onClick={e => { e.stopPropagation(); fileRef.current?.click() }}>🖼 変更</button>
-          <button style={{ ...btn, background: 'rgba(239,68,68,0.7)' }}
-            onClick={e => { e.stopPropagation(); setHeaderBanner('') }}>削除</button>
+          <div style={{ flex: 1 }} />
+          <button style={{ ...btn, background: 'rgba(16,185,129,0.85)' }} onClick={() => setRepositioning(false)}>完了</button>
         </div>
       )}
 
