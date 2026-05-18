@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ritsuki-v2'
+const CACHE_NAME = 'ritsuki-v3'
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()
@@ -13,6 +13,8 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
+  // Never cache HTML navigation — always fetch fresh from network
+  if (event.request.mode === 'navigate') return
   if (event.request.method !== 'GET') return
   event.respondWith(
     fetch(event.request)
