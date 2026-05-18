@@ -47,7 +47,7 @@ export default function SettingsPage() {
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
 
-  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, headerBanner, setHeaderBanner } = store
+  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, headerBanner, setHeaderBanner, headerBannerY, setHeaderBannerY } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -283,10 +283,26 @@ export default function SettingsPage() {
         <div style={{ width: '100%', height: 80, borderRadius: 8, overflow: 'hidden', background: headerBanner ? `url(${headerBanner}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 12 }}>
           {!headerBanner && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>}
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: headerBanner ? 14 : 0 }}>
           <button className="btn-primary" onClick={() => bannerRef.current?.click()} style={{ fontSize: 13 }}>アップロード</button>
           {headerBanner && <button className="btn-ghost" onClick={() => setHeaderBanner('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
         </div>
+        {headerBanner && (
+          <div style={{ marginBottom: 4 }}>
+            <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span>上下位置</span>
+              <span>{headerBannerY}%</span>
+            </label>
+            <input
+              type="range" min={0} max={100} value={headerBannerY}
+              onChange={e => setHeaderBannerY(Number(e.target.value))}
+              style={{ width: '100%', accentColor: 'var(--emerald)' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+              <span>上</span><span>下</span>
+            </div>
+          </div>
+        )}
         <input ref={bannerRef} type="file" accept="image/*" onChange={handleBannerUpload} style={{ display: 'none' }} />
         <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '10px 0 0' }}>全ページ上部に表示されるバナー画像です。横長の画像が適しています。</p>
       </div>

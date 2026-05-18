@@ -21,6 +21,7 @@ interface AppStore extends AppData {
   bgPosition: string
   bgPositionMobile: string
   headerBanner: string
+  headerBannerY: number
   setLanguage: (lang: Lang) => void
   setSidebarIcon: (url: string) => void
   setBgImage: (url: string) => void
@@ -28,6 +29,7 @@ interface AppStore extends AppData {
   setBgPosition: (pos: string) => void
   setBgPositionMobile: (pos: string) => void
   setHeaderBanner: (url: string) => void
+  setHeaderBannerY: (y: number) => void
 
   // Subjects
   addSubject: (subject: Omit<Subject, 'id'>) => void
@@ -122,6 +124,7 @@ export const useStore = create<AppStore>()(
       bgPosition: 'center',
       bgPositionMobile: 'center',
       headerBanner: '',
+      headerBannerY: 50,
       setLanguage: (lang) => set({ language: lang }),
       setSidebarIcon: (url) => set({ sidebarIcon: url }),
       setBgImage: (url) => set({ bgImage: url }),
@@ -129,6 +132,7 @@ export const useStore = create<AppStore>()(
       setBgPosition: (pos) => set({ bgPosition: pos }),
       setBgPositionMobile: (pos) => set({ bgPositionMobile: pos }),
       setHeaderBanner: (url) => set({ headerBanner: url }),
+      setHeaderBannerY: (y) => set({ headerBannerY: y }),
 
       addSubject: (subject) => set((s) => ({ subjects: [...s.subjects, { ...subject, id: generateId() }] })),
       updateSubject: (id, updates) => set((s) => ({ subjects: s.subjects.map((x) => x.id === id ? { ...x, ...updates } : x) })),
