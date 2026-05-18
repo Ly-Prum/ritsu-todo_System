@@ -56,7 +56,7 @@ export function formatDueDate(dueDate?: string): string {
   const days = getDaysUntilDue(dueDate)
   const date = new Date(dueDate)
   const formatted = `${date.getMonth() + 1}/${date.getDate()}`
-  if (days < 0) return `${formatted} (${Math.abs(days)}日超過)`
+  if (days < 0) return `${formatted} (期限切れ)`
   if (days === 0) return `${formatted} (今日)`
   if (days === 1) return `${formatted} (明日)`
   return `${formatted} (${days}日後)`

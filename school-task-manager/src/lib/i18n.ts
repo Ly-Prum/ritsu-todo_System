@@ -90,7 +90,7 @@ const ja = {
   // Dashboard
   dash_title: 'Ritsuki Dashboard',
   dash_pending: '未完了',
-  dash_overdue: '期限超過',
+  dash_overdue: '期限切れ',
   dash_completed: '完了済み',
   dash_completion: '達成率',
   dash_total: '合計',
