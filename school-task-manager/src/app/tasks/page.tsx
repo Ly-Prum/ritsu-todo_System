@@ -5,7 +5,7 @@ import {
   PRIORITY_COLORS, STATUS_COLORS,
   SUBJECT_COLORS, formatDueDate, getDueDateColor
 } from '@/lib/utils'
-import type { Task, Priority, TaskStatus, TaskType } from '@/lib/types'
+import type { Task, Subject, Priority, TaskStatus, TaskType } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, CheckCircle2, Circle, Clock, Filter, Search } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import GradientText from '@/components/GradientText'
@@ -17,7 +17,7 @@ const emptyForm = {
 }
 
 export default function TasksPage() {
-  const { tasks, subjects, addTask, updateTask, deleteTask, addSubject } = useStore()
+  const { tasks, subjects, addTask, updateTask, deleteTask, addSubject, updateSubject } = useStore()
   const t = useT()
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -33,6 +33,8 @@ export default function TasksPage() {
   const [quickSubjectId, setQuickSubjectId] = useState('')
   const [quickDate, setQuickDate] = useState('')
   const quickDateRef = useRef<HTMLInputElement>(null)
+  const [tab, setTab] = useState<'tasks' | 'progress'>('tasks')
+  const [progressEdit, setProgressEdit] = useState<{ id: string, totalReports: string, totalSessions: string, attended: string, registered: string } | null>(null)
 
   const tPriority = (p: Priority) => ({ low: t('priority_low'), medium: t('priority_medium'), high: t('priority_high') }[p])
   const tStatus = (s: TaskStatus) => ({ pending: t('status_pending'), 'in-progress': t('status_inprogress'), completed: t('status_completed') }[s])
@@ -140,6 +142,24 @@ export default function TasksPage() {
         </div>
       </div>
 
+      {/* タブ切り替え */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
+        {(['tasks', 'progress'] as const).map(t2 => (
+          <button key={t2} onClick={() => setTab(t2)} style={{
+            padding: '8px 20px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+            background: 'none', borderBottom: tab === t2 ? '2px solid var(--emerald)' : '2px solid transparent',
+            color: tab === t2 ? 'var(--emerald)' : 'var(--text-muted)', marginBottom: -1,
+          }}>
+            {t2 === 'tasks' ? 'タスク一覧' : '修得管理'}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'progress' && (
+        <ProgressTable subjects={subjects} tasks={tasks} updateSubject={updateSubject} progressEdit={progressEdit} setProgressEdit={setProgressEdit} />
+      )}
+
+      {tab === 'tasks' && <>
       {/* クイック追加バー */}
       <div className="card" style={{ padding: '12px 16px', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0 }}>⚡ クイック追加</span>
@@ -401,6 +421,181 @@ export default function TasksPage() {
           </div>
         </div>
       )}
+      </>}
     </div>
+  )
+}
+
+// ─── 修得管理テーブル ───────────────────────────────────────────────
+function ProgressTable({ subjects, tasks, updateSubject, progressEdit, setProgressEdit }: {
+  subjects: Subject[]
+  tasks: Task[]
+  updateSubject: (id: string, updates: Partial<Subject>) => void
+  progressEdit: { id: string, totalReports: string, totalSessions: string, attended: string, registered: string } | null
+  setProgressEdit: (v: typeof progressEdit) => void
+}) {
+  if (subjects.length === 0) return (
+    <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
+      科目を追加してから修得管理を使用してください
+    </div>
+  )
+
+  function saveProgress() {
+    if (!progressEdit) return
+    updateSubject(progressEdit.id, {
+      totalReports: progressEdit.totalReports ? Number(progressEdit.totalReports) : undefined,
+      totalSessions: progressEdit.totalSessions ? Number(progressEdit.totalSessions) : undefined,
+      attendedSessions: Number(progressEdit.attended) || 0,
+      registeredSessions: Number(progressEdit.registered) || 0,
+    })
+    setProgressEdit(null)
+  }
+
+  const th: React.CSSProperties = {
+    padding: '10px 12px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)',
+    textAlign: 'left', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
+  }
+  const td: React.CSSProperties = {
+    padding: '12px', fontSize: 13, borderBottom: '1px solid rgba(255,255,255,0.05)', verticalAlign: 'middle',
+  }
+
+  return (
+    <>
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
+          <thead>
+            <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <th style={th}>科目</th>
+              <th style={th}>レポート<br /><span style={{ fontWeight: 400, fontSize: 10 }}>提出済/全回数</span></th>
+              <th style={th}>スクーリング<br /><span style={{ fontWeight: 400, fontSize: 10 }}>出席(+申込)/全コマ</span></th>
+              <th style={th}>テスト(試験)<br /><span style={{ fontWeight: 400, fontSize: 10 }}>受験可否・受験状況</span></th>
+              <th style={th}>修得状況</th>
+              <th style={{ ...th, width: 40 }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {subjects.map(s => {
+              const reportTasks = tasks.filter(t => t.subjectId === s.id && t.type === 'report')
+              const completedReports = reportTasks.filter(t => t.status === 'completed').length
+              const examTasks = tasks.filter(t => t.subjectId === s.id && t.type === 'exam')
+              const examDone = examTasks.some(t => t.status === 'completed')
+              const attended = s.attendedSessions ?? 0
+              const registered = s.registeredSessions ?? 0
+              const totalSessions = s.totalSessions ?? null
+              const totalReports = s.totalReports ?? null
+              const reportsDone = totalReports !== null && completedReports >= totalReports
+              const schoolingDone = totalSessions !== null && (attended + registered) >= totalSessions
+              const canExam = reportsDone && schoolingDone
+
+              const examLabel = totalReports === null && totalSessions === null
+                ? <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>未設定</span>
+                : !canExam
+                  ? <span style={{ fontSize: 12, color: '#f59e0b' }}>{[!reportsDone && 'レポート未完', !schoolingDone && 'スクーリング未完'].filter(Boolean).join('・')}</span>
+                  : examDone
+                    ? <span style={{ fontSize: 12, color: 'var(--emerald)' }}>✓ 受験済</span>
+                    : <span style={{ fontSize: 12, color: 'var(--sky)' }}>受験可</span>
+
+              const statusLabel = totalReports === null && totalSessions === null
+                ? { text: '未設定', color: 'var(--text-muted)' }
+                : examDone && canExam
+                  ? { text: '修得', color: 'var(--emerald)' }
+                  : canExam
+                    ? { text: '受験待ち', color: 'var(--sky)' }
+                    : { text: '判定前', color: 'var(--text-muted)' }
+
+              return (
+                <tr key={s.id} style={{ transition: 'background 0.15s' }} className="hover:bg-white/[0.02]">
+                  <td style={td}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: s.color, flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
+                      <span style={{ fontWeight: 600 }}>{s.name}</span>
+                    </div>
+                  </td>
+                  <td style={td}>
+                    {totalReports === null
+                      ? <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>
+                      : <span style={{ color: reportsDone ? 'var(--emerald)' : 'var(--text)' }}>
+                          {completedReports}/<span style={{ color: 'var(--text-muted)' }}>全{totalReports}回</span>
+                        </span>}
+                  </td>
+                  <td style={td}>
+                    {totalSessions === null
+                      ? <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>
+                      : <span style={{ color: schoolingDone ? 'var(--emerald)' : 'var(--text)' }}>
+                          出席済{attended}(+申込済{registered})/<span style={{ color: 'var(--text-muted)' }}>全{totalSessions}コマ</span>
+                        </span>}
+                  </td>
+                  <td style={td}>{examLabel}</td>
+                  <td style={td}>
+                    <span style={{ fontWeight: 700, color: statusLabel.color }}>{statusLabel.text}</span>
+                  </td>
+                  <td style={td}>
+                    <button
+                      className="btn-ghost"
+                      style={{ padding: '4px 6px' }}
+                      onClick={() => setProgressEdit({
+                        id: s.id,
+                        totalReports: s.totalReports?.toString() ?? '',
+                        totalSessions: s.totalSessions?.toString() ?? '',
+                        attended: (s.attendedSessions ?? 0).toString(),
+                        registered: (s.registeredSessions ?? 0).toString(),
+                      })}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 編集モーダル */}
+      {progressEdit && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setProgressEdit(null)}>
+          <div className="modal" style={{ maxWidth: 360 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>
+                {subjects.find(s => s.id === progressEdit.id)?.name} — 修得設定
+              </h2>
+              <button className="btn-ghost" onClick={() => setProgressEdit(null)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label className="label">全レポート回数</label>
+                <input className="input" type="number" min={0} placeholder="例: 6"
+                  value={progressEdit.totalReports}
+                  onChange={e => setProgressEdit({ ...progressEdit, totalReports: e.target.value })} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                <div>
+                  <label className="label" style={{ fontSize: 11 }}>出席済コマ</label>
+                  <input className="input" type="number" min={0} placeholder="0"
+                    value={progressEdit.attended}
+                    onChange={e => setProgressEdit({ ...progressEdit, attended: e.target.value })} />
+                </div>
+                <div>
+                  <label className="label" style={{ fontSize: 11 }}>申込済コマ</label>
+                  <input className="input" type="number" min={0} placeholder="0"
+                    value={progressEdit.registered}
+                    onChange={e => setProgressEdit({ ...progressEdit, registered: e.target.value })} />
+                </div>
+                <div>
+                  <label className="label" style={{ fontSize: 11 }}>全コマ数</label>
+                  <input className="input" type="number" min={0} placeholder="例: 2"
+                    value={progressEdit.totalSessions}
+                    onChange={e => setProgressEdit({ ...progressEdit, totalSessions: e.target.value })} />
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setProgressEdit(null)}>キャンセル</button>
+              <button className="btn-primary" onClick={saveProgress}>保存</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

@@ -10,6 +10,10 @@ export interface Subject {
   teacher?: string
   room?: string
   credits?: number
+  totalReports?: number
+  totalSessions?: number
+  attendedSessions?: number
+  registeredSessions?: number
 }
 
 export interface Task {
