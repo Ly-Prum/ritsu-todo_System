@@ -1,28 +1,15 @@
-const CACHE_NAME = 'ritsuki-v3'
-
-self.addEventListener('install', (event) => {
+// Service worker: clear all caches and unregister self
+self.addEventListener('install', () => {
   self.skipWaiting()
 })
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  )
-})
-
-self.addEventListener('fetch', (event) => {
-  // Never cache HTML navigation — always fetch fresh from network
-  if (event.request.mode === 'navigate') return
-  if (event.request.method !== 'GET') return
-  event.respondWith(
-    fetch(event.request)
-      .then((res) => {
-        const clone = res.clone()
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
-        return res
-      })
-      .catch(() => caches.match(event.request))
-  )
+self.addEventListener('activate', async () => {
+  // Delete every cache bucket
+  const keys = await caches.keys()
+  await Promise.all(keys.map(k => caches.delete(k)))
+  // Unregister this service worker so the browser goes straight to network
+  await self.registration.unregister()
+  // Reload all open tabs so they get fresh content
+  const clients = await self.clients.matchAll({ type: 'window' })
+  clients.forEach(client => client.navigate(client.url))
 })
