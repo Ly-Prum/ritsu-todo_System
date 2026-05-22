@@ -23,7 +23,7 @@ function pct(done: number, total: number) {
 }
 
 function statusColor(_p: number) {
-  return '#6b7280'
+  return '#a8b4c0'
 }
 
 type EditForm = { totalReports: string; totalSessions: string; attendedSessions: string }
@@ -221,12 +221,12 @@ export default function ProgressPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   {/* inline badges: report / session */}
                   {totalReports > 0 && (
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: `${statusColor(reportPct)}22`, color: statusColor(reportPct), border: `1px solid ${statusColor(reportPct)}55` }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: `${statusColor(reportPct)}33`, color: statusColor(reportPct), border: `1px solid ${statusColor(reportPct)}99` }}>
                       レポ {submittedReports}/{totalReports}
                     </span>
                   )}
                   {totalSessions > 0 && (
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: `${statusColor(sessionPct)}22`, color: statusColor(sessionPct), border: `1px solid ${statusColor(sessionPct)}55` }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: `${statusColor(sessionPct)}33`, color: statusColor(sessionPct), border: `1px solid ${statusColor(sessionPct)}99` }}>
                       出席 {attended}/{totalSessions}
                     </span>
                   )}
@@ -292,11 +292,11 @@ export default function ProgressPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-dim)', fontWeight: 600 }}>レポート</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: statusColor(reportPct) }}>
+                        <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 700 }}>レポート</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: statusColor(reportPct) }}>
                           {submittedReports}/{totalReports}
                           {totalReports > submittedReports && (
-                            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-dim)', marginLeft: 5 }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim)', marginLeft: 5 }}>
                               あと{totalReports - submittedReports}本
                             </span>
                           )}
@@ -307,11 +307,11 @@ export default function ProgressPage() {
                     {totalSessions > 0 && (
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                          <span style={{ fontSize: 11, color: 'var(--text-dim)', fontWeight: 600 }}>出席</span>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: statusColor(sessionPct) }}>
+                          <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 700 }}>出席</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: statusColor(sessionPct) }}>
                             {attended}/{totalSessions}
                             {totalSessions > attended && (
-                              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-dim)', marginLeft: 5 }}>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim)', marginLeft: 5 }}>
                                 あと{totalSessions - attended}回
                               </span>
                             )}

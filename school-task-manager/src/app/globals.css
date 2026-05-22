@@ -24,13 +24,13 @@
   --bottom-nav-menu-bg: rgba(36,36,36,0.92);
   --bottom-nav-item-bg: rgba(50,50,50,0.80);
   --bottom-nav-text: #888888;
-  /* Text opacity levels */
-  --text-strong: rgba(232,232,232,0.92);
-  --text-medium: rgba(232,232,232,0.80);
-  --text-dim: rgba(232,232,232,0.50);
-  --text-faint: rgba(232,232,232,0.40);
-  --text-ghost: rgba(232,232,232,0.30);
-  --text-check-off: rgba(232,232,232,0.25);
+  /* Text levels — solid colors for cross-platform rendering */
+  --text-strong: #dcdcdc;
+  --text-medium: #c0c0c0;
+  --text-dim: #9a9a9a;
+  --text-faint: #7a7a7a;
+  --text-ghost: #606060;
+  --text-check-off: #505050;
   /* Misc */
   --divider: rgba(255,255,255,0.08);
   --overlay-bg: rgba(0,0,0,0.25);
@@ -59,13 +59,13 @@
   --bottom-nav-menu-bg: #f4f5f9;
   --bottom-nav-item-bg: #eef0f8;
   --bottom-nav-text: #5a6278;
-  /* Text opacity levels */
-  --text-strong: rgba(17,19,30,0.90);
-  --text-medium: rgba(17,19,30,0.80);
-  --text-dim: rgba(17,19,30,0.55);
-  --text-faint: rgba(17,19,30,0.45);
-  --text-ghost: rgba(17,19,30,0.38);
-  --text-check-off: rgba(17,19,30,0.28);
+  /* Text levels — solid colors for cross-platform rendering */
+  --text-strong: #18202e;
+  --text-medium: #2e3a50;
+  --text-dim: #6b7280;
+  --text-faint: #8b939e;
+  --text-ghost: #a0a8b4;
+  --text-check-off: #b5bcc8;
   /* Misc */
   --divider: rgba(0,0,0,0.07);
   --overlay-bg: rgba(255,255,255,0.12);
