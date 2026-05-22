@@ -17,7 +17,7 @@ const emptyForm = {
 }
 
 export default function TasksPage() {
-  const { tasks, subjects, addTask, updateTask, deleteTask, addSubject, updateSubject } = useStore()
+  const { tasks, subjects, addTask, updateTask, deleteTask, addSubject, updateSubject, deleteSubject } = useStore()
   const t = useT()
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -34,7 +34,7 @@ export default function TasksPage() {
   const [quickDate, setQuickDate] = useState('')
   const quickDateRef = useRef<HTMLInputElement>(null)
   const [tab, setTab] = useState<'tasks' | 'progress'>('tasks')
-  const [progressEdit, setProgressEdit] = useState<{ id: string, totalReports: string, totalSessions: string, attended: string, registered: string, hasExam: boolean } | null>(null)
+  const [progressEdit, setProgressEdit] = useState<{ id: string, totalReports: string, submittedReports: string, totalSessions: string, registered: string, hasExam: boolean } | null>(null)
 
   const tPriority = (p: Priority) => ({ low: t('priority_low'), medium: t('priority_medium'), high: t('priority_high') }[p])
   const tStatus = (s: TaskStatus) => ({ pending: t('status_pending'), 'in-progress': t('status_inprogress'), completed: t('status_completed') }[s])
@@ -149,7 +149,7 @@ export default function TasksPage() {
       </div>
 
       {tab === 'progress' && (
-        <ProgressTable subjects={subjects} tasks={tasks} updateSubject={updateSubject} addSubject={addSubject} progressEdit={progressEdit} setProgressEdit={setProgressEdit} />
+        <ProgressTable subjects={subjects} tasks={tasks} updateSubject={updateSubject} addSubject={addSubject} deleteSubject={deleteSubject} progressEdit={progressEdit} setProgressEdit={setProgressEdit} />
       )}
 
       {tab === 'tasks' && <>
@@ -469,28 +469,34 @@ function GaugeCard({ label, value, total, color, subtitle }: {
 }
 
 // ─── 修得管理テーブル ───────────────────────────────────────────────
-function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdit, setProgressEdit }: {
+function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubject, progressEdit, setProgressEdit }: {
   subjects: Subject[]
   tasks: Task[]
   updateSubject: (id: string, updates: Partial<Subject>) => void
   addSubject: (s: Omit<Subject, 'id'>) => void
-  progressEdit: { id: string, totalReports: string, totalSessions: string, attended: string, registered: string, hasExam: boolean } | null
+  deleteSubject: (id: string) => void
+  progressEdit: { id: string, totalReports: string, submittedReports: string, totalSessions: string, registered: string, hasExam: boolean } | null
   setProgressEdit: (v: typeof progressEdit) => void
 }) {
   const totalReportCount = subjects.reduce((sum, s) => sum + (s.totalReports ?? 0), 0)
-  const doneReportCount = subjects.reduce((sum, s) =>
-    sum + tasks.filter(t => t.subjectId === s.id && t.type === 'report' && t.status === 'completed').length, 0)
+  const doneReportCount = subjects.reduce((sum, s) => {
+    const manual = s.submittedReports
+    const fromTasks = tasks.filter(t => t.subjectId === s.id && t.type === 'report' && t.status === 'completed').length
+    return sum + (manual !== undefined ? manual : fromTasks)
+  }, 0)
   const totalSessionCount = subjects.reduce((sum, s) => sum + (s.totalSessions ?? 0), 0)
-  const doneSessionCount = subjects.reduce((sum, s) => sum + (s.attendedSessions ?? 0) + (s.registeredSessions ?? 0), 0)
+  const doneSessionCount = subjects.reduce((sum, s) => sum + (s.registeredSessions ?? 0), 0)
   const examSubjects = subjects.filter(s => s.hasExam !== false)
   const doneExamCount = examSubjects.filter(s =>
     tasks.some(t => t.subjectId === s.id && t.type === 'exam' && t.status === 'completed')).length
   const masteredCount = subjects.filter(s => {
-    const completed = tasks.filter(t => t.subjectId === s.id && t.type === 'report' && t.status === 'completed').length
+    const manual = s.submittedReports
+    const fromTasks = tasks.filter(t => t.subjectId === s.id && t.type === 'report' && t.status === 'completed').length
+    const submitted = manual !== undefined ? manual : fromTasks
     const examDone = tasks.some(t => t.subjectId === s.id && t.type === 'exam' && t.status === 'completed')
-    const att = (s.attendedSessions ?? 0) + (s.registeredSessions ?? 0)
-    const repDone = s.totalReports != null && completed >= s.totalReports
-    const sessDone = s.totalSessions != null && att >= s.totalSessions
+    const registered = s.registeredSessions ?? 0
+    const repDone = s.totalReports != null && submitted >= s.totalReports
+    const sessDone = s.totalSessions != null && registered >= s.totalSessions
     return s.hasExam === false ? repDone && sessDone : examDone && repDone && sessDone
   }).length
 
@@ -506,8 +512,8 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
     if (!progressEdit) return
     updateSubject(progressEdit.id, {
       totalReports: progressEdit.totalReports ? Number(progressEdit.totalReports) : undefined,
+      submittedReports: progressEdit.submittedReports !== '' ? Number(progressEdit.submittedReports) : undefined,
       totalSessions: progressEdit.totalSessions ? Number(progressEdit.totalSessions) : undefined,
-      attendedSessions: Number(progressEdit.attended) || 0,
       registeredSessions: Number(progressEdit.registered) || 0,
       hasExam: progressEdit.hasExam,
     })
@@ -542,7 +548,7 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
         <GaugeCard label="年間レポート" value={doneReportCount} total={totalReportCount}
           color="var(--emerald)" subtitle={`提出済${doneReportCount}/全${totalReportCount}回`} />
         <GaugeCard label="スクーリング" value={doneSessionCount} total={totalSessionCount}
-          color="var(--sky)" subtitle={`出席+申込${doneSessionCount}/必要${totalSessionCount}コマ`} />
+          color="var(--sky)" subtitle={`申込済${doneSessionCount}/必要${totalSessionCount}コマ`} />
         <GaugeCard label="テスト(試験)" value={doneExamCount} total={examSubjects.length}
           color="#f59e0b" subtitle={`受験済${doneExamCount}/${examSubjects.length}科目`} />
         <GaugeCard label="修得状況" value={masteredCount} total={subjects.length}
@@ -563,7 +569,7 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
             <tr style={{ background: 'var(--thead-bg)' }}>
               <th style={th}>科目</th>
               <th style={th}>レポート<br /><span style={{ fontWeight: 400, fontSize: 10 }}>提出済/全回数</span></th>
-              <th style={th}>スクーリング<br /><span style={{ fontWeight: 400, fontSize: 10 }}>出席(+申込)/全コマ</span></th>
+              <th style={th}>スクーリング<br /><span style={{ fontWeight: 400, fontSize: 10 }}>申込済/全コマ</span></th>
               <th style={th}>テスト(試験)<br /><span style={{ fontWeight: 400, fontSize: 10 }}>受験可否・受験状況</span></th>
               <th style={th}>修得状況</th>
               <th style={{ ...th, width: 40 }}></th>
@@ -571,16 +577,15 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
           </thead>
           <tbody>
             {subjects.map(s => {
-              const reportTasks = tasks.filter(t => t.subjectId === s.id && t.type === 'report')
-              const completedReports = reportTasks.filter(t => t.status === 'completed').length
+              const fromTasks = tasks.filter(t => t.subjectId === s.id && t.type === 'report' && t.status === 'completed').length
+              const completedReports = s.submittedReports !== undefined ? s.submittedReports : fromTasks
               const examTasks = tasks.filter(t => t.subjectId === s.id && t.type === 'exam')
               const examDone = examTasks.some(t => t.status === 'completed')
-              const attended = s.attendedSessions ?? 0
               const registered = s.registeredSessions ?? 0
               const totalSessions = s.totalSessions ?? null
               const totalReports = s.totalReports ?? null
               const reportsDone = totalReports !== null && completedReports >= totalReports
-              const schoolingDone = totalSessions !== null && (attended + registered) >= totalSessions
+              const schoolingDone = totalSessions !== null && registered >= totalSessions
               const canExam = reportsDone && schoolingDone
 
               const examLabel = s.hasExam === false
@@ -616,15 +621,25 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
                   <td style={td}>
                     {totalReports === null
                       ? <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>
-                      : <span style={{ color: reportsDone ? 'var(--emerald)' : 'var(--text)' }}>
-                          {completedReports}/<span style={{ color: 'var(--text-muted)' }}>全{totalReports}回</span>
-                        </span>}
+                      : <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <button type="button"
+                            onClick={() => updateSubject(s.id, { submittedReports: Math.max(0, completedReports - 1) })}
+                            style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid var(--border)', background: 'var(--surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--text-muted)', flexShrink: 0 }}
+                          >−</button>
+                          <span style={{ color: reportsDone ? 'var(--emerald)' : 'var(--text)', fontWeight: 600, minWidth: 64, textAlign: 'center', fontSize: 13 }}>
+                            {completedReports}/<span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>全{totalReports}回</span>
+                          </span>
+                          <button type="button"
+                            onClick={() => updateSubject(s.id, { submittedReports: completedReports + 1 })}
+                            style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid var(--border)', background: 'var(--surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--text-muted)', flexShrink: 0 }}
+                          >+</button>
+                        </div>}
                   </td>
                   <td style={td}>
                     {totalSessions === null
                       ? <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>
                       : <span style={{ color: schoolingDone ? 'var(--emerald)' : 'var(--text)' }}>
-                          出席済{attended}(+申込済{registered})/<span style={{ color: 'var(--text-muted)' }}>全{totalSessions}コマ</span>
+                          申込済{registered}/<span style={{ color: 'var(--text-muted)' }}>全{totalSessions}コマ</span>
                         </span>}
                   </td>
                   <td style={td}>{examLabel}</td>
@@ -638,8 +653,8 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
                       onClick={() => setProgressEdit({
                         id: s.id,
                         totalReports: s.totalReports?.toString() ?? '',
+                        submittedReports: s.submittedReports?.toString() ?? '',
                         totalSessions: s.totalSessions?.toString() ?? '',
-                        attended: (s.attendedSessions ?? 0).toString(),
                         registered: (s.registeredSessions ?? 0).toString(),
                         hasExam: s.hasExam !== false,
                       })}
@@ -671,21 +686,23 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
                   onChange={e => setProgressEdit({ ...progressEdit, hasExam: e.target.checked })}
                   style={{ width: 16, height: 16, cursor: 'pointer' }} />
               </div>
-              <div>
-                <label className="label">全レポート回数</label>
-                <input className="input" type="number" min={0} placeholder="例: 6"
-                  value={progressEdit.totalReports}
-                  onChange={e => setProgressEdit({ ...progressEdit, totalReports: e.target.value })} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <div>
-                  <label className="label" style={{ fontSize: 11 }}>出席済コマ</label>
+                  <label className="label">提出済みレポート数</label>
                   <input className="input" type="number" min={0} placeholder="0"
-                    value={progressEdit.attended}
-                    onChange={e => setProgressEdit({ ...progressEdit, attended: e.target.value })} />
+                    value={progressEdit.submittedReports}
+                    onChange={e => setProgressEdit({ ...progressEdit, submittedReports: e.target.value })} />
                 </div>
                 <div>
-                  <label className="label" style={{ fontSize: 11 }}>申込済コマ</label>
+                  <label className="label">全レポート回数</label>
+                  <input className="input" type="number" min={0} placeholder="例: 6"
+                    value={progressEdit.totalReports}
+                    onChange={e => setProgressEdit({ ...progressEdit, totalReports: e.target.value })} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div>
+                  <label className="label" style={{ fontSize: 11 }}>スクーリング申込済コマ</label>
                   <input className="input" type="number" min={0} placeholder="0"
                     value={progressEdit.registered}
                     onChange={e => setProgressEdit({ ...progressEdit, registered: e.target.value })} />
@@ -698,7 +715,13 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+              <button className="btn-danger" style={{ marginRight: 'auto' }} onClick={() => {
+                if (confirm(`「${subjects.find(s => s.id === progressEdit.id)?.name}」を削除しますか？`)) {
+                  deleteSubject(progressEdit.id)
+                  setProgressEdit(null)
+                }
+              }}>削除</button>
               <button className="btn-secondary" onClick={() => setProgressEdit(null)}>キャンセル</button>
               <button className="btn-primary" onClick={saveProgress}>保存</button>
             </div>

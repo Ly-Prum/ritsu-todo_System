@@ -11,6 +11,7 @@ export interface Subject {
   room?: string
   credits?: number
   totalReports?: number
+  submittedReports?: number
   totalSessions?: number
   attendedSessions?: number
   registeredSessions?: number
