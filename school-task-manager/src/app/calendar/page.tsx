@@ -9,7 +9,7 @@ import { useT } from '@/hooks/useT'
 
 const BAR_H = 16
 const BAR_GAP = 2
-const DATE_H = 30
+const DATE_H = 26
 
 type Placement = {
   ev: AppEvent
@@ -208,7 +208,6 @@ export default function CalendarPage() {
                   {/* Day cells */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
                     {week.map(({ date, day, otherMonth }, ci) => {
-                      const dayTasks = tasksByDate[date] ?? []
                       const isToday = date === today
                       const isSelected = date === selectedDate
                       const weekday = ci
@@ -226,7 +225,7 @@ export default function CalendarPage() {
                               ? 'rgba(16,185,129,0.22)'
                               : isToday ? 'rgba(16,185,129,0.12)'
                                 : undefined,
-                            minHeight: Math.max(90, contentTop + 20),
+                            minHeight: Math.max(68, contentTop + 8),
                             opacity: otherMonth ? 0.45 : 1,
                             position: 'relative',
                           }}
@@ -234,30 +233,12 @@ export default function CalendarPage() {
                           {/* Date number */}
                           <div style={{
                             position: 'absolute', top: 4, left: 6,
-                            fontSize: 16, fontWeight: isToday ? 800 : 700,
+                            fontSize: 14, fontWeight: isToday ? 800 : 700,
                             color: isToday ? 'var(--emerald)' : weekday === 0 ? '#ef4444' : weekday === 6 ? 'var(--sky)' : 'var(--text)',
                             display: 'flex', alignItems: 'center', gap: 3,
                           }}>
-                            {isToday && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--emerald)' }} />}
+                            {isToday && <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: 'var(--emerald)' }} />}
                             {day}
-                          </div>
-
-                          {/* Task chips below event bar area */}
-                          <div style={{ paddingTop: contentTop, paddingLeft: 4, paddingRight: 4, paddingBottom: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            {dayTasks.slice(0, 2).map(task => (
-                              <div key={task.id} style={{
-                                fontSize: 11, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
-                                backgroundColor: getSubjectColor(task.subjectId) + '40',
-                                borderLeft: `2px solid ${getSubjectColor(task.subjectId)}`,
-                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                opacity: task.status === 'completed' ? 0.5 : 1,
-                              }}>
-                                {task.title}
-                              </div>
-                            ))}
-                            {dayTasks.length > 2 && (
-                              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', paddingLeft: 2 }}>+{dayTasks.length - 2}</div>
-                            )}
                           </div>
                         </div>
                       )
