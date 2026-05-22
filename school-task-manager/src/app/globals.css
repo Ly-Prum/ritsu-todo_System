@@ -103,6 +103,20 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+/* Calendar cells — semi-transparent glass */
+.cal-cell {
+  background: rgba(36, 36, 36, 0.58);
+}
+[data-theme="light"] .cal-cell {
+  background: rgba(255, 255, 255, 0.65);
+}
+.cal-header-cell {
+  background: rgba(48, 48, 48, 0.72);
+}
+[data-theme="light"] .cal-header-cell {
+  background: rgba(240, 241, 247, 0.80);
+}
+
 /* Semi-transparent cards — background image shows through */
 .card {
   background: rgba(36, 36, 36, 0.72);

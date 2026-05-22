@@ -185,10 +185,10 @@ export default function CalendarPage() {
           {/* Weekday headers */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, marginBottom: 4 }}>
             {WEEKDAYS.map((d, i) => (
-              <div key={i} style={{
+              <div key={i} className="cal-header-cell" style={{
                 textAlign: 'center', fontSize: 12, fontWeight: 700, padding: '5px 0',
                 color: i === 0 ? '#ef4444' : i === 6 ? 'var(--sky)' : 'var(--text)',
-                background: 'var(--surface-2)', borderRadius: 6,
+                borderRadius: 6,
               }}>{d}</div>
             ))}
           </div>
@@ -220,16 +220,17 @@ export default function CalendarPage() {
                         <div
                           key={date}
                           onClick={() => handleDateClick(date)}
+                          className={!isSelected && !isToday ? 'cal-cell' : ''}
                           style={{
                             borderRight: ci < 6 ? '1px solid var(--divider)' : 'none',
                             borderTop: isToday || isSelected ? '2px solid var(--emerald)' : '2px solid transparent',
                             cursor: 'pointer',
                             background: isSelected
-                              ? 'rgba(16,185,129,0.18)'
-                              : isToday ? 'rgba(16,185,129,0.08)'
-                                : 'var(--surface)',
+                              ? 'rgba(16,185,129,0.22)'
+                              : isToday ? 'rgba(16,185,129,0.12)'
+                                : undefined,
                             minHeight: Math.max(90, contentTop + 20),
-                            opacity: otherMonth ? 0.38 : 1,
+                            opacity: otherMonth ? 0.45 : 1,
                             position: 'relative',
                           }}
                         >
