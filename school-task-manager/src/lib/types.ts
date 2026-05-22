@@ -12,6 +12,8 @@ export interface Subject {
   credits?: number
   totalReports?: number
   submittedReports?: number
+  totalMonthlyReports?: number
+  submittedMonthlyReports?: number
   totalSessions?: number
   attendedSessions?: number
   registeredSessions?: number

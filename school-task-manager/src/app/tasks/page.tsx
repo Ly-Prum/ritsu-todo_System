@@ -34,7 +34,7 @@ export default function TasksPage() {
   const [quickDate, setQuickDate] = useState('')
   const quickDateRef = useRef<HTMLInputElement>(null)
   const [tab, setTab] = useState<'tasks' | 'progress'>('tasks')
-  const [progressEdit, setProgressEdit] = useState<{ id: string, totalReports: string, submittedReports: string, totalSessions: string, registered: string, hasExam: boolean } | null>(null)
+  const [progressEdit, setProgressEdit] = useState<{ id: string, totalReports: string, submittedReports: string, totalMonthlyReports: string, submittedMonthlyReports: string, totalSessions: string, registered: string, hasExam: boolean } | null>(null)
 
   const tPriority = (p: Priority) => ({ low: t('priority_low'), medium: t('priority_medium'), high: t('priority_high') }[p])
   const tStatus = (s: TaskStatus) => ({ pending: t('status_pending'), 'in-progress': t('status_inprogress'), completed: t('status_completed') }[s])
@@ -475,7 +475,7 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
   updateSubject: (id: string, updates: Partial<Subject>) => void
   addSubject: (s: Omit<Subject, 'id'>) => void
   deleteSubject: (id: string) => void
-  progressEdit: { id: string, totalReports: string, submittedReports: string, totalSessions: string, registered: string, hasExam: boolean } | null
+  progressEdit: { id: string, totalReports: string, submittedReports: string, totalMonthlyReports: string, submittedMonthlyReports: string, totalSessions: string, registered: string, hasExam: boolean } | null
   setProgressEdit: (v: typeof progressEdit) => void
 }) {
   const totalReportCount = subjects.reduce((sum, s) => sum + (s.totalReports ?? 0), 0)
@@ -500,6 +500,26 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
     return s.hasExam === false ? repDone && sessDone : examDone && repDone && sessDone
   }).length
 
+  const [subTab, setSubTab] = useState<'subjects' | 'monthly'>('subjects')
+
+  // 月別: type=report かつ dueDate のあるタスクを月ごとに集計
+  type MonthEntry = { total: number; done: number; deadline: string; rows: { name: string; color: string; total: number; done: number }[] }
+  const byMonth: Record<string, MonthEntry> = {}
+  tasks.filter(t => t.type === 'report' && t.dueDate).forEach(t => {
+    const ym = t.dueDate!.slice(0, 7)
+    const subj = subjects.find(s => s.id === t.subjectId)
+    if (!byMonth[ym]) byMonth[ym] = { total: 0, done: 0, deadline: t.dueDate!, rows: [] }
+    byMonth[ym].total++
+    if (t.status === 'completed') byMonth[ym].done++
+    if (t.dueDate! > byMonth[ym].deadline) byMonth[ym].deadline = t.dueDate!
+    const subjName = subj?.name ?? '（科目なし）'
+    const row = byMonth[ym].rows.find(r => r.name === subjName)
+    if (row) { row.total++; if (t.status === 'completed') row.done++ }
+    else byMonth[ym].rows.push({ name: subjName, color: subj?.color ?? '#888', total: 1, done: t.status === 'completed' ? 1 : 0 })
+  })
+  const sortedMonths = Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b))
+  const todayYM = new Date().toISOString().slice(0, 7)
+
   function loadPreset() {
     const existingNames = new Set(subjects.map(s => s.name))
     const toAdd = NLOBBY_SUBJECTS.filter(s => !existingNames.has(s.name))
@@ -513,6 +533,8 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
     updateSubject(progressEdit.id, {
       totalReports: progressEdit.totalReports ? Number(progressEdit.totalReports) : undefined,
       submittedReports: progressEdit.submittedReports !== '' ? Number(progressEdit.submittedReports) : undefined,
+      totalMonthlyReports: progressEdit.totalMonthlyReports ? Number(progressEdit.totalMonthlyReports) : undefined,
+      submittedMonthlyReports: progressEdit.submittedMonthlyReports !== '' ? Number(progressEdit.submittedMonthlyReports) : undefined,
       totalSessions: progressEdit.totalSessions ? Number(progressEdit.totalSessions) : undefined,
       registeredSessions: Number(progressEdit.registered) || 0,
       hasExam: progressEdit.hasExam,
@@ -555,15 +577,25 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
           color="#a78bfa" subtitle={`修得済${masteredCount}/${subjects.length}科目`} />
       </div>
 
-      {hasUnloaded && (
-        <div style={{ marginBottom: 12, textAlign: 'right' }}>
-          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={loadPreset}>
+      {/* サブタブ */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)' }}>
+        {([['subjects', '教科別進捗'], ['monthly', '月別レポート']] as const).map(([key, label]) => (
+          <button key={key} type="button" onClick={() => setSubTab(key)}
+            className={`tab-btn${subTab === key ? ' active' : ''}`}
+            style={{ padding: '7px 18px', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer',
+              borderBottom: subTab === key ? '2px solid var(--emerald)' : '2px solid transparent',
+              borderRadius: '8px 8px 0 0', marginBottom: -1 }}>
+            {label}
+          </button>
+        ))}
+        {hasUnloaded && subTab === 'subjects' && (
+          <button type="button" className="btn-secondary" style={{ fontSize: 12, marginLeft: 'auto', marginBottom: 4 }} onClick={loadPreset}>
             N Lobbyプリセットを追加
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="card" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: 0 }}>
+      {subTab === 'subjects' && <div className="card" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
           <thead>
             <tr style={{ background: 'var(--thead-bg)' }}>
@@ -654,6 +686,8 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
                         id: s.id,
                         totalReports: s.totalReports?.toString() ?? '',
                         submittedReports: s.submittedReports?.toString() ?? '',
+                        totalMonthlyReports: s.totalMonthlyReports?.toString() ?? '',
+                        submittedMonthlyReports: s.submittedMonthlyReports?.toString() ?? '',
                         totalSessions: s.totalSessions?.toString() ?? '',
                         registered: (s.registeredSessions ?? 0).toString(),
                         hasExam: s.hasExam !== false,
@@ -691,7 +725,86 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
             </tr>
           </tfoot>
         </table>
-      </div>
+      </div>}
+
+      {/* 月別レポートビュー */}
+      {subTab === 'monthly' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {sortedMonths.length === 0 ? (
+            <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
+              レポートタスクに期限日を設定すると、ここに月別で表示されます
+            </div>
+          ) : (() => {
+            const current = sortedMonths.filter(([ym]) => ym === todayYM)
+            const upcoming = sortedMonths.filter(([ym]) => ym > todayYM)
+            const past = sortedMonths.filter(([ym]) => ym < todayYM)
+            const daysLeft = (() => {
+              const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+              return Math.ceil((end.getTime() - Date.now()) / 86400000)
+            })()
+
+            const MonthCard = ([ym, entry]: [string, typeof byMonth[string]], highlight: boolean) => {
+              const [y, m] = ym.split('-')
+              const pct = entry.total > 0 ? Math.round(entry.done / entry.total * 100) : 0
+              return (
+                <div key={ym} className="card" style={{ padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700 }}>{m}月のレポート</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                        期限 {m}月15日
+                        {highlight && <span style={{ marginLeft: 8, color: '#f59e0b', fontWeight: 600 }}>あと{daysLeft}日</span>}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', fontSize: 13 }}>
+                      <span style={{ fontWeight: 700, color: entry.done >= entry.total ? 'var(--emerald)' : 'var(--text)' }}>
+                        レポート <span style={{ color: 'var(--emerald)', fontWeight: 800 }}>{entry.done}</span> / {entry.total}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="progress-bar" style={{ marginBottom: 10 }}>
+                    <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {entry.rows.map(r => (
+                      <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: r.color, flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
+                        <span style={{ flex: 1 }}>{r.name}</span>
+                        <span style={{ color: r.done >= r.total ? 'var(--emerald)' : 'var(--text)', fontWeight: 600 }}>
+                          {r.done}/{r.total}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <>
+                {current.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginTop: 4 }}>優先するレポート ({current.length})</div>
+                    {current.map(e => MonthCard(e, true))}
+                  </>
+                )}
+                {upcoming.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginTop: 8 }}>今後のレポート ({upcoming.length})</div>
+                    {upcoming.map(e => MonthCard(e, false))}
+                  </>
+                )}
+                {past.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginTop: 8 }}>過去のレポート ({past.length})</div>
+                    {past.map(e => MonthCard(e, false))}
+                  </>
+                )}
+              </>
+            )
+          })()}
+        </div>
+      )}
 
       {/* 編集モーダル */}
       {progressEdit && (
@@ -710,18 +823,34 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
                   onChange={e => setProgressEdit({ ...progressEdit, hasExam: e.target.checked })}
                   style={{ width: 16, height: 16, cursor: 'pointer' }} />
               </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>年間レポート</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <div>
-                  <label className="label">提出済みレポート数</label>
+                  <label className="label">提出済み</label>
                   <input className="input" type="number" min={0} placeholder="0"
                     value={progressEdit.submittedReports}
                     onChange={e => setProgressEdit({ ...progressEdit, submittedReports: e.target.value })} />
                 </div>
                 <div>
-                  <label className="label">全レポート回数</label>
+                  <label className="label">全回数</label>
                   <input className="input" type="number" min={0} placeholder="例: 6"
                     value={progressEdit.totalReports}
                     onChange={e => setProgressEdit({ ...progressEdit, totalReports: e.target.value })} />
+                </div>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>月刊レポート（月ごとの提出数）</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div>
+                  <label className="label">提出済み</label>
+                  <input className="input" type="number" min={0} placeholder="0"
+                    value={progressEdit.submittedMonthlyReports}
+                    onChange={e => setProgressEdit({ ...progressEdit, submittedMonthlyReports: e.target.value })} />
+                </div>
+                <div>
+                  <label className="label">月の全回数</label>
+                  <input className="input" type="number" min={0} placeholder="例: 1"
+                    value={progressEdit.totalMonthlyReports}
+                    onChange={e => setProgressEdit({ ...progressEdit, totalMonthlyReports: e.target.value })} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
