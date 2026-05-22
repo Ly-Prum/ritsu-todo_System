@@ -3,8 +3,8 @@ export type Lang = 'ja' | 'en'
 const ja = {
   // Navigation
   nav_dashboard: 'ダッシュボード',
-  nav_tasks: 'レポート',
-  nav_progress: '教科別進捗',
+  nav_tasks: 'タスク管理',
+  nav_progress: 'レポート進捗管理',
   nav_calendar: 'カレンダー',
   nav_events: 'イベント',
   nav_links: 'マイリンク',
