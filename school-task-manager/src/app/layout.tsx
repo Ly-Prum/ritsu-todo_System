@@ -1,6 +1,15 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
+import { Inter, Noto_Sans_JP } from 'next/font/google'
 import './globals.css'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+const notoSansJP = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '900'],
+  variable: '--font-noto',
+  display: 'swap',
+})
 import Sidebar from '@/components/Sidebar'
 import BackgroundProvider from '@/components/BackgroundProvider'
 import SupabaseSync from '@/components/SupabaseSync'
@@ -31,7 +40,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" suppressHydrationWarning>
+    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`} suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

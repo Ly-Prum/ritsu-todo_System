@@ -16,8 +16,8 @@
   --card-border-2: #363636;
   --card-shadow: 0 2px 12px rgba(0,0,0,0.40);
   /* Navigation */
-  --sidebar-bg: rgba(20,20,20,0.88);
-  --sidebar-border: #2d2d2d;
+  --sidebar-bg: linear-gradient(180deg, rgba(8,32,22,0.94) 0%, rgba(8,20,38,0.96) 100%);
+  --sidebar-border: rgba(16,185,129,0.18);
   --mobile-nav-bg: rgba(20,20,20,0.88);
   --bottom-nav-bg: rgba(20,20,20,0.88);
   --bottom-nav-border: #2d2d2d;
@@ -51,8 +51,8 @@
   --card-border-2: #e8eaf3;
   --card-shadow: 0 2px 12px rgba(0,0,0,0.07);
   /* Navigation */
-  --sidebar-bg: rgba(255,255,255,0.88);
-  --sidebar-border: #e0e3ef;
+  --sidebar-bg: linear-gradient(180deg, rgba(220,252,240,0.92) 0%, rgba(218,240,255,0.92) 100%);
+  --sidebar-border: rgba(16,185,129,0.22);
   --mobile-nav-bg: rgba(255,255,255,0.88);
   --bottom-nav-bg: rgba(255,255,255,0.88);
   --bottom-nav-border: #e0e3ef;
@@ -92,7 +92,7 @@ html {
 body {
   background-color: transparent;
   color: var(--text);
-  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  font-family: var(--font-inter), var(--font-noto), 'Hiragino Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
   line-height: 1.6;
