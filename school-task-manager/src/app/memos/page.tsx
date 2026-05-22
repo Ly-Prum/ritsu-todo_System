@@ -56,7 +56,8 @@ export default function MemosPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>メモ</span>
         <button className="btn-primary" onClick={openNew}><Plus size={14} /> 新しいメモ</button>
       </div>
 

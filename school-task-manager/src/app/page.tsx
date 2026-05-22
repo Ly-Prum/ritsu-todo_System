@@ -129,6 +129,7 @@ export default function Dashboard() {
 
       {/* ── ヘッダー ── */}
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'baseline', gap: 12 }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>ダッシュボード</span>
         <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)' }}>Study Task Manager</div>
         <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
           {today.getFullYear()}年{today.getMonth() + 1}月{today.getDate()}日（{DOW[today.getDay()]}）

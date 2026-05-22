@@ -144,6 +144,9 @@ export default function EventsPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600 }}>
+      <div style={{ marginBottom: 16 }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>予定管理</span>
+      </div>
 
       {/* イベント追加バー */}
       <div className="card" style={{ padding: '14px 16px', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', borderColor: 'rgba(16,185,129,0.25)' }}>

@@ -168,6 +168,9 @@ export default function CalendarPage() {
 
   return (
     <div style={{ padding: '16px 14px', width: '100%' }}>
+      <div style={{ marginBottom: 12 }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>カレンダー</span>
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <button className="btn-secondary" onClick={prevMonth} style={{ padding: '6px 10px' }}><ChevronLeft size={16} /></button>
           <span className="chip-label" style={{ fontSize: 20, fontWeight: 800, minWidth: 140, textAlign: 'center' }}>{monthYearLabel}</span>

@@ -119,6 +119,9 @@ export default function SettingsPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600 }}>
+      <div style={{ marginBottom: 16 }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>設定</span>
+      </div>
 
       {/* 言語設定 */}
       <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>

@@ -123,13 +123,16 @@ export default function TasksPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>タスク管理</span>
+        <div style={{ display: 'flex', gap: 8 }}>
         <button className="btn-secondary" onClick={() => setShowSubjectForm(true)}>
           <Plus size={14} /> {t('tasks_subject_add')}
         </button>
         <button className="btn-primary" onClick={openNew}>
           <Plus size={14} /> {t('tasks_add')}
         </button>
+        </div>
       </div>
 
       {/* クイック追加バー */}
