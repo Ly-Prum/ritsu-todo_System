@@ -168,16 +168,13 @@ export default function CalendarPage() {
 
   return (
     <div style={{ padding: '16px 14px', width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, color: 'var(--text)' }}>{t('cal_title')}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <button className="btn-secondary" onClick={prevMonth} style={{ padding: '6px 10px' }}><ChevronLeft size={16} /></button>
-          <span style={{ fontSize: 16, fontWeight: 700, minWidth: 120, textAlign: 'center' }}>{monthYearLabel}</span>
+          <span className="chip-label" style={{ fontSize: 20, fontWeight: 800, minWidth: 140, textAlign: 'center' }}>{monthYearLabel}</span>
           <button className="btn-secondary" onClick={nextMonth} style={{ padding: '6px 10px' }}><ChevronRight size={16} /></button>
           <button className="btn-ghost" onClick={() => { setYear(new Date().getFullYear()); setMonth(new Date().getMonth()) }} style={{ fontSize: 12 }}>
             {t('cal_today')}
           </button>
-        </div>
       </div>
 
       <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: selectedDate ? '1fr 280px' : '1fr', gap: 20 }}>
@@ -236,8 +233,8 @@ export default function CalendarPage() {
                         >
                           {/* Date number */}
                           <div style={{
-                            position: 'absolute', top: 4, left: 5,
-                            fontSize: 13, fontWeight: isToday ? 800 : 700,
+                            position: 'absolute', top: 4, left: 6,
+                            fontSize: 16, fontWeight: isToday ? 800 : 700,
                             color: isToday ? 'var(--emerald)' : weekday === 0 ? '#ef4444' : weekday === 6 ? 'var(--sky)' : 'var(--text)',
                             display: 'flex', alignItems: 'center', gap: 3,
                           }}>

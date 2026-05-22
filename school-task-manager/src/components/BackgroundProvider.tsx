@@ -5,21 +5,9 @@ import { useStore } from '@/lib/store'
 
 const SIDEBAR_W = 220
 
-const btn: React.CSSProperties = {
-  background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none',
-  borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 600,
-  cursor: 'pointer',
-}
-const sqBtn: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
-  borderRadius: 6, width: 30, height: 30, fontSize: 15,
-  cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-}
-
 export default function BackgroundProvider() {
-  const { bgImage, bgImageMobile, bgX, bgY, bgZoom, setBgX, setBgY, setBgZoom } = useStore()
+  const { bgImage, bgImageMobile, bgX, bgY, bgZoom } = useStore()
   const [isMobile, setIsMobile] = useState(false)
-  const [showControls, setShowControls] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -70,70 +58,6 @@ export default function BackgroundProvider() {
         position: 'fixed', top: 0, left, width, height: '100%',
         background: 'var(--overlay-bg)', zIndex: 1, pointerEvents: 'none',
       }} />
-
-      {/* 調整パネル */}
-      {showControls ? (
-        <div style={{
-          position: 'fixed',
-          bottom: isMobile ? 80 : 20,
-          left: isMobile ? '50%' : SIDEBAR_W + 20,
-          transform: isMobile ? 'translateX(-50%)' : 'none',
-          zIndex: 300,
-          background: 'rgba(0,0,0,0.82)',
-          borderRadius: 12,
-          padding: '14px 16px',
-          display: 'flex', flexDirection: 'column', gap: 10,
-          color: 'white', fontSize: 12, minWidth: 220,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 2, letterSpacing: '0.08em' }}>背景調整</div>
-
-          {/* 上下 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'rgba(255,255,255,0.6)', minWidth: 36 }}>上下</span>
-            <button type="button" style={sqBtn} onClick={() => setBgY(Math.max(0, bgY - 5))}>▲</button>
-            <span style={{ minWidth: 32, textAlign: 'center', fontWeight: 700 }}>{bgY}%</span>
-            <button type="button" style={sqBtn} onClick={() => setBgY(Math.min(100, bgY + 5))}>▼</button>
-          </div>
-
-          {/* 左右 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'rgba(255,255,255,0.6)', minWidth: 36 }}>左右</span>
-            <button type="button" style={sqBtn} onClick={() => setBgX(Math.max(0, bgX - 5))}>◀</button>
-            <span style={{ minWidth: 32, textAlign: 'center', fontWeight: 700 }}>{bgX}%</span>
-            <button type="button" style={sqBtn} onClick={() => setBgX(Math.min(100, bgX + 5))}>▶</button>
-          </div>
-
-          {/* ズーム */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'rgba(255,255,255,0.6)', minWidth: 36 }}>ズーム</span>
-            <button type="button" style={sqBtn} onClick={() => setBgZoom(Math.max(1, parseFloat((bgZoom - 0.1).toFixed(1))))}>－</button>
-            <span style={{ minWidth: 32, textAlign: 'center', fontWeight: 700 }}>{Math.round(bgZoom * 100)}%</span>
-            <button type="button" style={sqBtn} onClick={() => setBgZoom(Math.min(4, parseFloat((bgZoom + 0.1).toFixed(1))))}>＋</button>
-          </div>
-
-          <button type="button" onClick={() => setShowControls(false)} style={{ ...btn, background: 'rgba(16,185,129,0.85)', marginTop: 4 }}>
-            完了
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowControls(true)}
-          style={{
-            ...btn,
-            position: 'fixed',
-            bottom: isMobile ? 80 : 20,
-            left: isMobile ? 16 : SIDEBAR_W + 16,
-            zIndex: 300,
-            borderRadius: 20,
-            padding: '6px 14px',
-            opacity: 0.75,
-          }}
-        >
-          🖼 背景調整
-        </button>
-      )}
     </>
   )
 }

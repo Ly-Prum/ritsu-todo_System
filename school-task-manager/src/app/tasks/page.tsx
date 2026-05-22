@@ -125,30 +125,23 @@ export default function TasksPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, marginBottom: 4, color: 'var(--text)' }}>{t('tasks_title')}</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
-            {tasks.length}{t('tasks_stat_registered')} · {tasks.filter(task => task.status === 'completed').length}{t('tasks_stat_done')}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-secondary" onClick={() => setShowSubjectForm(true)}>
-            <Plus size={14} /> {t('tasks_subject_add')}
-          </button>
-          <button className="btn-primary" onClick={openNew}>
-            <Plus size={14} /> {t('tasks_add')}
-          </button>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 20 }}>
+        <button className="btn-secondary" onClick={() => setShowSubjectForm(true)}>
+          <Plus size={14} /> {t('tasks_subject_add')}
+        </button>
+        <button className="btn-primary" onClick={openNew}>
+          <Plus size={14} /> {t('tasks_add')}
+        </button>
       </div>
 
       {/* タブ切り替え */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
         {(['tasks', 'progress'] as const).map(t2 => (
-          <button key={t2} onClick={() => setTab(t2)} style={{
-            padding: '8px 20px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-            background: 'none', borderBottom: tab === t2 ? '2px solid var(--emerald)' : '2px solid transparent',
-            color: tab === t2 ? 'var(--emerald)' : 'var(--text-muted)', marginBottom: -1,
+          <button key={t2} onClick={() => setTab(t2)} className={`tab-btn${tab === t2 ? ' active' : ''}`} style={{
+            padding: '8px 20px', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer',
+            borderBottom: tab === t2 ? '2px solid var(--emerald)' : '2px solid transparent',
+            borderRadius: '8px 8px 0 0',
+            marginBottom: -1,
           }}>
             {t2 === 'tasks' ? 'タスク一覧' : '修得管理'}
           </button>

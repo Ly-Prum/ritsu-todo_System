@@ -56,11 +56,7 @@ export default function MemosPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, marginBottom: 4, color: 'var(--text)' }}>メモ</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{memos.length} 件のメモ</p>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
         <button className="btn-primary" onClick={openNew}><Plus size={14} /> 新しいメモ</button>
       </div>
 

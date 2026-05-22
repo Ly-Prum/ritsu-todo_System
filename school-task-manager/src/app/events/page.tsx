@@ -55,6 +55,7 @@ export default function EventsPage() {
   const toggleExpand = (id: string) => setExpandedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   const [quickTitle, setQuickTitle] = useState('')
   const [quickDate, setQuickDate] = useState('')
+  const [quickEndDate, setQuickEndDate] = useState('')
   const [quickStartTime, setQuickStartTime] = useState('')
   const [quickEndTime, setQuickEndTime] = useState('')
   const [quickType, setQuickType] = useState<EventType>('event')
@@ -119,6 +120,7 @@ export default function EventsPage() {
     addEvent({
       title: quickTitle.trim(),
       date: quickDate,
+      endDate: quickEndDate || undefined,
       startTime: quickStartTime || undefined,
       endTime: quickEndTime || undefined,
       type: quickType,
@@ -126,6 +128,7 @@ export default function EventsPage() {
     })
     setQuickTitle('')
     setQuickDate('')
+    setQuickEndDate('')
     setQuickStartTime('')
     setQuickEndTime('')
   }
@@ -141,12 +144,6 @@ export default function EventsPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600 }}>
-      <div style={{ marginBottom: 14, display: 'flex', alignItems: 'baseline', gap: 10 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0 }}>
-          イベント管理
-        </h1>
-        <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>スクーリング・試験・イベントを管理</span>
-      </div>
 
       {/* イベント追加バー */}
       <div className="card" style={{ padding: '14px 16px', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', borderColor: 'rgba(16,185,129,0.25)' }}>
@@ -175,7 +172,16 @@ export default function EventsPage() {
           value={quickDate}
           onChange={e => setQuickDate(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && quickStartRef.current?.focus()}
-          style={{ flex: 1, minWidth: 140 }}
+          style={{ flex: 1, minWidth: 130 }}
+        />
+        <span style={{ fontSize: 12, color: 'var(--text-muted)', flexShrink: 0 }}>〜</span>
+        <input
+          className="input"
+          type="date"
+          value={quickEndDate}
+          onChange={e => setQuickEndDate(e.target.value)}
+          style={{ flex: 1, minWidth: 130 }}
+          title="終了日（連日の場合）"
         />
         <input
           ref={quickStartRef}
@@ -209,7 +215,7 @@ export default function EventsPage() {
 
       {/* Upcoming */}
       {upcoming.length > 0 && (
-        <div className="card" style={{ padding: 16, marginBottom: 20, borderColor: 'rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.04)' }}>
+        <div className="card" style={{ padding: 16, marginBottom: 20, borderColor: 'rgba(16,185,129,0.3)' }}>
           <h3 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: 'var(--emerald-light)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <CalendarCheck size={15} />
             今後7日間のイベント

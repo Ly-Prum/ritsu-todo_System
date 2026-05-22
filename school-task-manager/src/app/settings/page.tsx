@@ -33,7 +33,7 @@ export default function SettingsPage() {
     if ('Notification' in window) setNotifState(Notification.permission)
   }, [])
 
-  const { tasks, subjects, timetable, memos, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile } = store
+  const { tasks, subjects, timetable, memos, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, bgX, bgY, bgZoom, setBgX, setBgY, setBgZoom } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -119,7 +119,6 @@ export default function SettingsPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600 }}>
-      <h1 style={{ fontSize: 26, fontWeight: 700, margin: '0 0 14px', color: 'var(--text)' }}>{t('set_title')}</h1>
 
       {/* 言語設定 */}
       <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
@@ -242,18 +241,68 @@ export default function SettingsPage() {
             <div style={{ width: 96, height: 60, borderRadius: 8, overflow: 'hidden', background: bgImage ? `url(${bgImage}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 8 }}>
               {!bgImage && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🖼️</span>}
             </div>
-            <button className="btn-primary" onClick={() => bgRef.current?.click()} style={{ fontSize: 13, marginBottom: 6, marginRight: 8 }}>アップロード</button>
-            {bgImage && <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <button className="btn-primary" onClick={() => bgRef.current?.click()} style={{ fontSize: 13 }}>アップロード</button>
+              {bgImage && <button className="btn-ghost" onClick={() => setBgImage('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
+            </div>
             <input ref={bgRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
+            {bgImage && (
+              <div style={{ marginTop: 10, padding: '12px', borderRadius: 8, background: 'var(--surface-2)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', margin: 0, letterSpacing: '0.06em' }}>背景の位置・ズーム調整</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>上下</span>
+                  <button type="button" onClick={() => setBgY(Math.max(0, bgY - 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>▲</button>
+                  <span style={{ minWidth: 36, textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{bgY}%</span>
+                  <button type="button" onClick={() => setBgY(Math.min(100, bgY + 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>▼</button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>左右</span>
+                  <button type="button" onClick={() => setBgX(Math.max(0, bgX - 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>◀</button>
+                  <span style={{ minWidth: 36, textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{bgX}%</span>
+                  <button type="button" onClick={() => setBgX(Math.min(100, bgX + 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>▶</button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>ズーム</span>
+                  <button type="button" onClick={() => setBgZoom(Math.max(1, parseFloat((bgZoom - 0.1).toFixed(1))))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>－</button>
+                  <span style={{ minWidth: 36, textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{Math.round(bgZoom * 100)}%</span>
+                  <button type="button" onClick={() => setBgZoom(Math.min(4, parseFloat((bgZoom + 0.1).toFixed(1))))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>＋</button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div>
             <div style={{ width: 40, height: 60, borderRadius: 8, overflow: 'hidden', background: bgImageMobile ? `url(${bgImageMobile}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 8 }}>
               {!bgImageMobile && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🖼️</span>}
             </div>
-            <button className="btn-primary" onClick={() => bgMobileRef.current?.click()} style={{ fontSize: 13, marginBottom: 6, marginRight: 8 }}>アップロード</button>
-            {bgImageMobile && <button className="btn-ghost" onClick={() => setBgImageMobile('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <button className="btn-primary" onClick={() => bgMobileRef.current?.click()} style={{ fontSize: 13 }}>アップロード</button>
+              {bgImageMobile && <button className="btn-ghost" onClick={() => setBgImageMobile('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
+            </div>
             <input ref={bgMobileRef} type="file" accept="image/*" onChange={handleBgMobileUpload} style={{ display: 'none' }} />
+            {bgImageMobile && (
+              <div style={{ marginTop: 10, padding: '12px', borderRadius: 8, background: 'var(--surface-2)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', margin: 0, letterSpacing: '0.06em' }}>背景の位置・ズーム調整</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>上下</span>
+                  <button type="button" onClick={() => setBgY(Math.max(0, bgY - 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>▲</button>
+                  <span style={{ minWidth: 36, textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{bgY}%</span>
+                  <button type="button" onClick={() => setBgY(Math.min(100, bgY + 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>▼</button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>左右</span>
+                  <button type="button" onClick={() => setBgX(Math.max(0, bgX - 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>◀</button>
+                  <span style={{ minWidth: 36, textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{bgX}%</span>
+                  <button type="button" onClick={() => setBgX(Math.min(100, bgX + 5))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>▶</button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>ズーム</span>
+                  <button type="button" onClick={() => setBgZoom(Math.max(1, parseFloat((bgZoom - 0.1).toFixed(1))))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>－</button>
+                  <span style={{ minWidth: 36, textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{Math.round(bgZoom * 100)}%</span>
+                  <button type="button" onClick={() => setBgZoom(Math.min(4, parseFloat((bgZoom + 0.1).toFixed(1))))} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: 'var(--text)', fontSize: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>＋</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
         <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '12px 0 0' }}>自動で圧縮します。このデバイス用の背景を設定できます。</p>

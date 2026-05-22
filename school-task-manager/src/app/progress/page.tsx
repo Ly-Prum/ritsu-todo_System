@@ -107,7 +107,6 @@ export default function ProgressPage() {
   if (subjects.length === 0) {
     return (
       <div style={{ padding: '16px 14px', maxWidth: 1600 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, margin: '0 0 16px', color: 'var(--text)' }}>教科別進捗</h1>
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-dim)' }}>
           <GraduationCap size={48} style={{ margin: '0 auto 16px', display: 'block', opacity: 0.3 }} />
           <p style={{ fontSize: 14 }}>科目が登録されていません</p>
@@ -129,9 +128,7 @@ export default function ProgressPage() {
 
   return (
     <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
-      <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, color: 'var(--text)' }}>教科別進捗</h1>
-        <span style={{ color: 'var(--text-muted)', fontSize: 12, flex: 1 }}>{subjects.length}科目</span>
+      <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
         {deleteMode ? (
           <>
             <button

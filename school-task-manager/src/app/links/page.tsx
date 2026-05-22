@@ -3,7 +3,6 @@ import { useState, useRef } from 'react'
 import { useStore } from '@/lib/store'
 import type { LinkItem } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, ExternalLink, Search, Link2, ImagePlus, Smile } from 'lucide-react'
-import GradientText from '@/components/GradientText'
 
 
 const EMOJI_PALETTE = [
@@ -119,15 +118,8 @@ export default function LinksPage() {
   }
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}>
-            <GradientText>マイリンク</GradientText>
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>よく使うサービスのショートカット</p>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+    <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 20 }}>
           {links.length > 0 && (
             <button className="btn-danger" onClick={() => { if (confirm('すべてのリンクを削除しますか？')) clearLinks() }} style={{ fontSize: 13 }}>
               <Trash2 size={13} /> 全削除
@@ -136,7 +128,6 @@ export default function LinksPage() {
           <button className="btn-primary" onClick={openNew}>
             <Plus size={14} /> リンクを追加
           </button>
-        </div>
       </div>
 
       {/* Search */}
