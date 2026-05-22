@@ -666,6 +666,30 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, deleteSubje
               )
             })}
           </tbody>
+          <tfoot>
+            <tr style={{ background: 'var(--thead-bg)', borderTop: '2px solid var(--border)' }}>
+              <td style={{ ...td, fontWeight: 700, fontSize: 12, color: 'var(--text-muted)' }}>合計</td>
+              <td style={td}>
+                <span style={{ fontWeight: 700, color: doneReportCount >= totalReportCount && totalReportCount > 0 ? 'var(--emerald)' : 'var(--text)' }}>
+                  {doneReportCount}/<span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>全{totalReportCount}回</span>
+                </span>
+              </td>
+              <td style={td}>
+                <span style={{ fontWeight: 700, color: doneSessionCount >= totalSessionCount && totalSessionCount > 0 ? 'var(--emerald)' : 'var(--text)' }}>
+                  申込済{doneSessionCount}/<span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>全{totalSessionCount}コマ</span>
+                </span>
+              </td>
+              <td style={td}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>受験済{doneExamCount}/{examSubjects.length}科目</span>
+              </td>
+              <td style={td}>
+                <span style={{ fontWeight: 700, color: masteredCount === subjects.length && subjects.length > 0 ? 'var(--emerald)' : 'var(--text-muted)' }}>
+                  修得済{masteredCount}/{subjects.length}科目
+                </span>
+              </td>
+              <td style={td} />
+            </tr>
+          </tfoot>
         </table>
       </div>
 
