@@ -39,6 +39,9 @@ interface AppStore extends AppData {
   bgImageMobile: string
   bgPosition: string
   bgPositionMobile: string
+  bgX: number
+  bgY: number
+  bgZoom: number
   headerBanner: string
   headerBannerY: number
   headerBannerHeight: number
@@ -49,6 +52,9 @@ interface AppStore extends AppData {
   setBgImageMobile: (url: string) => void
   setBgPosition: (pos: string) => void
   setBgPositionMobile: (pos: string) => void
+  setBgX: (x: number) => void
+  setBgY: (y: number) => void
+  setBgZoom: (z: number) => void
   setHeaderBanner: (url: string) => void
   setHeaderBannerY: (y: number) => void
   setHeaderBannerHeight: (h: number) => void
@@ -150,6 +156,9 @@ export const useStore = create<AppStore>()(
       bgImageMobile: '',
       bgPosition: 'center',
       bgPositionMobile: 'center',
+      bgX: 50,
+      bgY: 50,
+      bgZoom: 1,
       headerBanner: '',
       headerBannerY: 50,
       headerBannerHeight: 260,
@@ -160,6 +169,9 @@ export const useStore = create<AppStore>()(
       setBgImageMobile: (url) => set({ bgImageMobile: url }),
       setBgPosition: (pos) => set({ bgPosition: pos }),
       setBgPositionMobile: (pos) => set({ bgPositionMobile: pos }),
+      setBgX: (x) => set({ bgX: x }),
+      setBgY: (y) => set({ bgY: y }),
+      setBgZoom: (z) => set({ bgZoom: z }),
       setHeaderBanner: (url) => set({ headerBanner: url }),
       setHeaderBannerY: (y) => set({ headerBannerY: y }),
       setHeaderBannerHeight: (h) => set({ headerBannerHeight: h }),
