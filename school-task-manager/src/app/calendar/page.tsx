@@ -236,7 +236,7 @@ export default function CalendarPage() {
                           {/* Date number */}
                           <div style={{
                             position: 'absolute', top: 4, left: 5,
-                            fontSize: 12, fontWeight: isToday ? 800 : 500,
+                            fontSize: 13, fontWeight: isToday ? 800 : 700,
                             color: isToday ? 'var(--emerald)' : weekday === 0 ? '#ef4444' : weekday === 6 ? 'var(--sky)' : 'var(--text)',
                             display: 'flex', alignItems: 'center', gap: 3,
                           }}>
@@ -248,17 +248,17 @@ export default function CalendarPage() {
                           <div style={{ paddingTop: contentTop, paddingLeft: 4, paddingRight: 4, paddingBottom: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
                             {dayTasks.slice(0, 2).map(task => (
                               <div key={task.id} style={{
-                                fontSize: 10, padding: '1px 4px', borderRadius: 3,
-                                backgroundColor: getSubjectColor(task.subjectId) + '30',
+                                fontSize: 11, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                                backgroundColor: getSubjectColor(task.subjectId) + '40',
                                 borderLeft: `2px solid ${getSubjectColor(task.subjectId)}`,
                                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                opacity: task.status === 'completed' ? 0.4 : 1,
+                                opacity: task.status === 'completed' ? 0.5 : 1,
                               }}>
                                 {task.title}
                               </div>
                             ))}
                             {dayTasks.length > 2 && (
-                              <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 2 }}>+{dayTasks.length - 2}</div>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', paddingLeft: 2 }}>+{dayTasks.length - 2}</div>
                             )}
                           </div>
                         </div>
