@@ -19,8 +19,6 @@ export default function HeaderBanner() {
   const dragStartBannerY = useRef(50)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  if (!headerBanner) return null
-
   function onMouseDown(e: React.MouseEvent) {
     if (!repositioning) return
     setDragging(true)
@@ -71,6 +69,24 @@ export default function HeaderBanner() {
     background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none',
     borderRadius: 6, width: 32, height: 32, fontSize: 16,
     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+  }
+
+  if (!headerBanner) {
+    return (
+      <div style={{ width: '100%', flexShrink: 0 }}>
+        <label style={{
+            width: '100%', padding: '8px 16px',
+            background: 'transparent',
+            borderBottom: '1px solid var(--border)',
+            color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6,
+          }}
+        >
+          🖼 ヘッダー画像を追加
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+        </label>
+      </div>
+    )
   }
 
   return (
