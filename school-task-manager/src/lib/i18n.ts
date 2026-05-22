@@ -6,7 +6,7 @@ const ja = {
   nav_tasks: 'タスク管理',
   nav_progress: 'レポート進捗管理',
   nav_calendar: 'カレンダー',
-  nav_events: 'イベント',
+  nav_events: '予定管理',
   nav_links: 'マイリンク',
   nav_memos: 'メモ',
   nav_settings: '設定・データ',
