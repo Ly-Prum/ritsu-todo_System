@@ -9,7 +9,7 @@ import { useT } from '@/hooks/useT'
 
 const BAR_H = 16
 const BAR_GAP = 2
-const DATE_H = 22
+const DATE_H = 30
 
 type Placement = {
   ev: AppEvent

@@ -23,6 +23,15 @@ export default function BackgroundProvider() {
   }, [])
 
   const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
+
+  useEffect(() => {
+    if (image && pathname !== '/') {
+      document.documentElement.classList.add('has-bg')
+    } else {
+      document.documentElement.classList.remove('has-bg')
+    }
+  }, [image, pathname])
+
   if (!image || pathname === '/') return null
 
   const left = isMobile ? 0 : SIDEBAR_W
