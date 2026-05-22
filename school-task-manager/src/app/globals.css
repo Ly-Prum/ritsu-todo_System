@@ -16,8 +16,8 @@
   --card-border-2: #363636;
   --card-shadow: 0 2px 12px rgba(0,0,0,0.40);
   /* Navigation */
-  --sidebar-bg: linear-gradient(180deg, rgba(6,78,59,0.97) 0%, rgba(12,74,110,0.97) 100%);
-  --sidebar-border: rgba(16,185,129,0.18);
+  --sidebar-bg: #18181e;
+  --sidebar-border: rgba(255,255,255,0.07);
   --mobile-nav-bg: rgba(20,20,20,0.88);
   --bottom-nav-bg: rgba(20,20,20,0.88);
   --bottom-nav-border: #2d2d2d;
@@ -51,8 +51,8 @@
   --card-border-2: #e8eaf3;
   --card-shadow: 0 2px 12px rgba(0,0,0,0.07);
   /* Navigation */
-  --sidebar-bg: linear-gradient(180deg, rgba(209,250,229,0.98) 0%, rgba(186,230,255,0.98) 100%);
-  --sidebar-border: rgba(16,185,129,0.22);
+  --sidebar-bg: #f0f1f7;
+  --sidebar-border: rgba(0,0,0,0.08);
   --mobile-nav-bg: rgba(255,255,255,0.88);
   --bottom-nav-bg: rgba(255,255,255,0.88);
   --bottom-nav-border: #e0e3ef;
