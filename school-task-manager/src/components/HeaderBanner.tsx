@@ -38,7 +38,7 @@ export default function HeaderBanner() {
     setHeaderBannerY(Math.max(0, Math.min(100, headerBannerY + (dir === 'up' ? -5 : 5))))
   }
   function nudgeH(dir: 'smaller' | 'larger') {
-    setHeaderBannerHeight(Math.max(80, Math.min(320, headerBannerHeight + (dir === 'larger' ? 20 : -20))))
+    setHeaderBannerHeight(Math.max(80, Math.min(600, headerBannerHeight + (dir === 'larger' ? 20 : -20))))
   }
   function nudgeZoom(dir: 'in' | 'out') {
     setHeaderBannerZoom(Math.max(1, Math.min(3, parseFloat((headerBannerZoom + (dir === 'in' ? 0.1 : -0.1)).toFixed(1)))))

@@ -1,55 +1,39 @@
 'use client'
-import { useRef, useState } from 'react'
-import Image from 'next/image'
-import { useStore } from '@/lib/store'
-import { sendSlackTest } from '@/lib/slack'
-import type { AppData, SlackChannel } from '@/lib/types'
+import { useRef, useState, useEffect } from 'react'
+import { useStore, THEME_COLORS, type ThemeColor, type ThemeMode } from '@/lib/store'
+import type { AppData } from '@/lib/types'
 import {
   Download, Upload, Trash2, BookOpen, CheckSquare, Clock, StickyNote,
-  AlertTriangle, Pencil, X, Bell, ExternalLink, Send,
-  HardDrive, ChevronDown, ChevronRight, CheckCircle2, Loader, Plus
+  AlertTriangle, Pencil, X, Bell,
+  HardDrive, ChevronDown, ChevronRight, CheckCircle2
 } from 'lucide-react'
 import { SUBJECT_COLORS } from '@/lib/utils'
 import { useT } from '@/hooks/useT'
-import GradientText from '@/components/GradientText'
+import { useIsMobile } from '@/hooks/useIsMobile'
+
 
 type SendState = 'idle' | 'loading' | 'ok' | 'error'
 
 export default function SettingsPage() {
   const store = useStore()
   const t = useT()
+  const isMobile = useIsMobile()
   const { language, setLanguage } = store
   const fileRef = useRef<HTMLInputElement>(null)
   const iconRef = useRef<HTMLInputElement>(null)
   const bgRef = useRef<HTMLInputElement>(null)
   const bgMobileRef = useRef<HTMLInputElement>(null)
-  const bannerRef = useRef<HTMLInputElement>(null)
   const [importMsg, setImportMsg] = useState('')
   const [showSubjectManager, setShowSubjectManager] = useState(false)
   const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string } | null>(null)
 
-  // Slack general webhook
-  const [slackUrl, setSlackUrl] = useState(store.integrations.slackWebhookUrl)
-  const [slackSaveState, setSlackSaveState] = useState<SendState>('idle')
-  const [slackTestState, setSlackTestState] = useState<SendState>('idle')
-  const [slackTestMsg, setSlackTestMsg] = useState('')
 
-  // Slack channel management
-  const [showChannelForm, setShowChannelForm] = useState(false)
-  const [editChannelId, setEditChannelId] = useState<string | null>(null)
-  const [channelForm, setChannelForm] = useState({ name: '', webhookUrl: '' })
+  const [notifState, setNotifState] = useState<'default' | 'granted' | 'denied'>('default')
+  useEffect(() => {
+    if ('Notification' in window) setNotifState(Notification.permission)
+  }, [])
 
-  // Mentor message
-  const [selectedChannelId, setSelectedChannelId] = useState('')
-  const [mentorMsg, setMentorMsg] = useState('')
-  const [mentorSendState, setMentorSendState] = useState<SendState>('idle')
-  const [mentorSendMsg, setMentorSendMsg] = useState('')
-
-  const [notifState, setNotifState] = useState<'default' | 'granted' | 'denied'>(
-    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
-  )
-
-  const { tasks, subjects, timetable, memos, slackChannels, addSlackChannel, updateSlackChannel, deleteSlackChannel, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile, headerBanner, setHeaderBanner, headerBannerY, setHeaderBannerY, headerBannerZoom } = store
+  const { tasks, subjects, timetable, memos, sidebarIcon, setSidebarIcon, bgImage, setBgImage, bgImageMobile, setBgImageMobile } = store
 
   function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -93,13 +77,6 @@ export default function SettingsPage() {
     e.target.value = ''
   }
 
-  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const compressed = await compressImage(file, 1920, 400)
-    setHeaderBanner(compressed)
-    e.target.value = ''
-  }
 
   function handleExport() {
     const data = store.exportData()
@@ -133,66 +110,6 @@ export default function SettingsPage() {
     e.target.value = ''
   }
 
-  function saveSlackUrl() {
-    store.updateIntegrations({ slackWebhookUrl: slackUrl })
-    setSlackSaveState('ok')
-    setTimeout(() => setSlackSaveState('idle'), 2000)
-  }
-
-  async function testSlack() {
-    if (!slackUrl) return
-    setSlackTestState('loading')
-    setSlackTestMsg('')
-    const result = await sendSlackTest(slackUrl)
-    setSlackTestState(result.ok ? 'ok' : 'error')
-    setSlackTestMsg(result.ok ? '✅ Slackにテストメッセージを送信しました！' : (result.error ?? 'エラー'))
-    setTimeout(() => { setSlackTestState('idle'); setSlackTestMsg('') }, 4000)
-  }
-
-  function saveChannel() {
-    if (!channelForm.name.trim() || !channelForm.webhookUrl.trim()) return
-    if (editChannelId) {
-      updateSlackChannel(editChannelId, { name: channelForm.name.trim(), webhookUrl: channelForm.webhookUrl.trim() })
-    } else {
-      addSlackChannel({ name: channelForm.name.trim(), webhookUrl: channelForm.webhookUrl.trim() })
-    }
-    setShowChannelForm(false)
-    setEditChannelId(null)
-    setChannelForm({ name: '', webhookUrl: '' })
-  }
-
-  function openEditChannel(ch: SlackChannel) {
-    setEditChannelId(ch.id)
-    setChannelForm({ name: ch.name, webhookUrl: ch.webhookUrl })
-    setShowChannelForm(true)
-  }
-
-  async function sendMentorMessage() {
-    const ch = slackChannels.find(c => c.id === selectedChannelId)
-    if (!ch || !mentorMsg.trim()) return
-    setMentorSendState('loading')
-    setMentorSendMsg('')
-    try {
-      const res = await fetch(ch.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: `📩 *Ritsuki より*\n${mentorMsg.trim()}` }),
-      })
-      if (res.ok) {
-        setMentorSendState('ok')
-        setMentorSendMsg(`「${ch.name}」に送信しました`)
-        setMentorMsg('')
-      } else {
-        setMentorSendState('error')
-        setMentorSendMsg(`送信失敗 (${res.status})`)
-      }
-    } catch {
-      setMentorSendState('error')
-      setMentorSendMsg('ネットワークエラー')
-    }
-    setTimeout(() => { setMentorSendState('idle'); setMentorSendMsg('') }, 4000)
-  }
-
   async function requestNotifPermission() {
     if (!('Notification' in window)) return
     const perm = await Notification.requestPermission()
@@ -201,12 +118,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 24px' }}><GradientText>{t('set_title')}</GradientText></h1>
+    <div style={{ padding: '16px 14px', maxWidth: 1600 }}>
+      <h1 style={{ fontSize: 26, fontWeight: 700, margin: '0 0 14px', color: 'var(--text)' }}>{t('set_title')}</h1>
 
       {/* 言語設定 */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
           🌐 {t('set_language')}
         </h2>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -229,9 +146,72 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* テーマ設定 */}
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
+        <h2 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700 }}>🎨 テーマ設定</h2>
+
+        {/* ダーク / ライト */}
+        <div style={{ marginBottom: 12 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 6px', fontWeight: 600 }}>モード</p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['dark', 'light'] as ThemeMode[]).map(mode => (
+              <button key={mode} onClick={() => store.updateIntegrations({ themeMode: mode })}
+                style={{
+                  padding: '7px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                  border: 'none', cursor: 'pointer',
+                  background: store.integrations.themeMode === mode
+                    ? 'linear-gradient(135deg, var(--emerald), var(--sky))' : 'var(--surface-2)',
+                  color: store.integrations.themeMode === mode ? '#fff' : 'var(--text-muted)',
+                }}>
+                {mode === 'dark' ? '🌙 ダーク' : '☀️ ライト'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 文字・アクセントカラー */}
+        <div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px', fontWeight: 600 }}>文字・アクセントカラー</p>
+          {(['単色', 'モノ・ホワイト'] as const).map(cat => {
+            const entries = (Object.entries(THEME_COLORS) as [ThemeColor, typeof THEME_COLORS[ThemeColor]][]).filter(([, t]) => t.category === cat)
+            return (
+              <div key={cat} style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '0 0 7px', fontWeight: 700, letterSpacing: '0.06em' }}>{cat}</p>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                  {entries.map(([key, theme]) => {
+                    const active = (store.integrations.themeColor ?? 'emerald') === key
+                    return (
+                      <button key={key} onClick={() => store.updateIntegrations({ themeColor: key })}
+                        title={theme.label}
+                        style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                        }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 9999,
+                          background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
+                          border: active ? '3px solid var(--text)' : '2px solid var(--border)',
+                          outline: active ? '2px solid ' + theme.primary : 'none', outlineOffset: 2,
+                          boxShadow: active ? '0 0 0 3px ' + theme.primary + '50' : 'none',
+                          transition: 'all 0.15s',
+                        }} />
+                        <span style={{ fontSize: 9, color: active ? 'var(--text)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>{theme.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>
+            {THEME_COLORS[store.integrations.themeColor ?? 'emerald']?.label} が選択中
+          </p>
+        </div>
+      </div>
+
       {/* サイドバーアイコン */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🖼️ サイドバーアイコン</h2>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 700 }}>🖼️ サイドバーアイコン</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ width: 56, height: 56, borderRadius: 14, background: 'linear-gradient(135deg, var(--emerald), var(--sky))', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
             {sidebarIcon
@@ -255,9 +235,9 @@ export default function SettingsPage() {
       </div>
 
       {/* 背景画像 */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🌄 背景画像</h2>
-        {typeof window !== 'undefined' && window.innerWidth >= 768 ? (
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 700 }}>🌄 背景画像</h2>
+        {!isMobile ? (
           <div>
             <div style={{ width: 96, height: 60, borderRadius: 8, overflow: 'hidden', background: bgImage ? `url(${bgImage}) center/cover` : 'var(--surface-2)', border: '1px solid var(--border)', position: 'relative', marginBottom: 8 }}>
               {!bgImage && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🖼️</span>}
@@ -279,56 +259,9 @@ export default function SettingsPage() {
         <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '12px 0 0' }}>自動で圧縮します。このデバイス用の背景を設定できます。</p>
       </div>
 
-      {/* ヘッダーバナー */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700 }}>🖼️ ヘッダーバナー</h2>
-        <div style={{ width: 280, height: 90, borderRadius: 8, overflow: 'hidden', background: 'var(--surface-2)', border: '1px solid var(--border)', marginBottom: 12, position: 'relative' }}>
-          {headerBanner ? (
-            <Image
-              src={headerBanner}
-              alt=""
-              fill
-              unoptimized
-              className="object-cover will-change-transform"
-              style={{
-                objectPosition: `center ${headerBannerY}%`,
-                transform: `scale(${headerBannerZoom ?? 1})`,
-                transformOrigin: 'center center',
-              }}
-            />
-          ) : (
-            <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-muted)' }}>バナー未設定</span>
-          )}
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: headerBanner ? 14 : 0 }}>
-          <button className="btn-primary" onClick={() => bannerRef.current?.click()} style={{ fontSize: 13 }}>アップロード</button>
-          {headerBanner && <button className="btn-ghost" onClick={() => setHeaderBanner('')} style={{ fontSize: 12, color: '#ef4444' }}>削除</button>}
-        </div>
-        {headerBanner && (
-          <div style={{ marginBottom: 4, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span>上下位置</span>
-                <span>{headerBannerY}%</span>
-              </label>
-              <input
-                type="range" min={0} max={100} value={headerBannerY}
-                onChange={e => setHeaderBannerY(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--emerald)' }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                <span>上</span><span>下</span>
-              </div>
-            </div>
-          </div>
-        )}
-        <input ref={bannerRef} type="file" accept="image/*" onChange={handleBannerUpload} style={{ display: 'none' }} />
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '10px 0 0' }}>全ページ上部に表示されるバナー画像です。横長の画像が適しています。</p>
-      </div>
-
       {/* Stats */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700 }}>データ概要</h2>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 700 }}>データ概要</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           {[
             { icon: BookOpen, label: '科目', count: subjects.length, color: 'var(--emerald)' },
@@ -345,159 +278,8 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ===== Slack チャンネル管理 ===== */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 24, height: 24, background: '#4A154B', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ fontSize: 13 }}>💬</span>
-            </div>
-            Slack チャンネル管理
-          </h2>
-          <button className="btn-primary" onClick={() => { setEditChannelId(null); setChannelForm({ name: '', webhookUrl: '' }); setShowChannelForm(true) }} style={{ fontSize: 12 }}>
-            <Plus size={13} /> チャンネル追加
-          </button>
-        </div>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 14px' }}>
-          部活・担任・メンターなど、チャンネルごとに Webhook URL を登録してメッセージを送れます。
-        </p>
-
-        {/* Webhook setup guide */}
-        <div className="card-2" style={{ padding: '12px 14px', marginBottom: 14, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-          <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4, fontSize: 13 }}>📋 Webhook URL の取得手順</div>
-          <ol style={{ margin: 0, paddingLeft: 18 }}>
-            <li><a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" style={{ color: 'var(--sky)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>api.slack.com/apps <ExternalLink size={10} /></a> → ログイン</li>
-            <li>「Create New App」→「From scratch」→ アプリ名を入力</li>
-            <li>「Incoming Webhooks」を有効化 → 「Add New Webhook to Workspace」</li>
-            <li>通知したいチャンネルを選択 → 表示された URL をコピー</li>
-          </ol>
-        </div>
-
-        {/* Channel list */}
-        {slackChannels.length === 0 ? (
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
-            チャンネルが登録されていません
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {slackChannels.map(ch => (
-              <div key={ch.id} className="card-2" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 16 }}>💬</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{ch.name}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {ch.webhookUrl.substring(0, 50)}...
-                  </div>
-                </div>
-                <button className="btn-ghost" style={{ padding: '4px 8px' }} onClick={() => openEditChannel(ch)}><Pencil size={13} /></button>
-                <button className="btn-ghost" style={{ padding: '4px 8px', color: '#ef4444' }} onClick={() => { if (confirm('削除しますか？')) deleteSlackChannel(ch.id) }}><Trash2 size={13} /></button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Channel form modal */}
-        {showChannelForm && (
-          <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowChannelForm(false)}>
-            <div className="modal" style={{ maxWidth: 440 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{editChannelId ? 'チャンネルを編集' : 'チャンネルを追加'}</h3>
-                <button className="btn-ghost" onClick={() => setShowChannelForm(false)}><X size={18} /></button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div>
-                  <label className="label">チャンネル名 *</label>
-                  <input className="input" value={channelForm.name} onChange={e => setChannelForm(f => ({ ...f, name: e.target.value }))} placeholder="例: 部活動, 担任, メンター" autoFocus />
-                </div>
-                <div>
-                  <label className="label">Webhook URL *</label>
-                  <input className="input" value={channelForm.webhookUrl} onChange={e => setChannelForm(f => ({ ...f, webhookUrl: e.target.value }))} placeholder="https://hooks.slack.com/services/..." style={{ fontFamily: 'monospace', fontSize: 11 }} />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 18, justifyContent: 'flex-end' }}>
-                <button className="btn-secondary" onClick={() => setShowChannelForm(false)}>キャンセル</button>
-                <button className="btn-primary" onClick={saveChannel} disabled={!channelForm.name.trim() || !channelForm.webhookUrl.trim()}>保存</button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ===== メンターへメッセージ ===== */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Send size={16} color="var(--sky)" />
-          Slack にメッセージを送る
-        </h2>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 14px' }}>
-          登録済みチャンネルにメッセージを送信できます。メンターへの質問・連絡に活用してください。
-        </p>
-        {slackChannels.length === 0 ? (
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '8px 0' }}>
-            先にチャンネルを追加してください
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div>
-              <label className="label">送信先チャンネル</label>
-              <select className="input" value={selectedChannelId} onChange={e => setSelectedChannelId(e.target.value)}>
-                <option value="">チャンネルを選択...</option>
-                {slackChannels.map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">メッセージ</label>
-              <textarea className="input" value={mentorMsg} onChange={e => setMentorMsg(e.target.value)} placeholder="質問や連絡内容を入力..." rows={3} />
-            </div>
-            <button
-              className="btn-primary"
-              onClick={sendMentorMessage}
-              disabled={!selectedChannelId || !mentorMsg.trim() || mentorSendState === 'loading'}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              {mentorSendState === 'loading' ? <><Loader size={14} /> 送信中...</> : <><Send size={14} /> 送信する</>}
-            </button>
-            {mentorSendMsg && (
-              <div style={{ padding: '8px 12px', borderRadius: 6, fontSize: 13, background: mentorSendState === 'ok' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${mentorSendState === 'ok' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, color: mentorSendState === 'ok' ? 'var(--emerald-light)' : '#ef4444' }}>
-                {mentorSendMsg}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ===== 通知設定 Webhook（アラーム用） ===== */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 24, height: 24, background: '#4A154B', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 13 }}>🔔</span>
-          </div>
-          Slack アラーム通知（デフォルト）
-          {store.integrations.slackWebhookUrl && (
-            <span className="badge" style={{ background: 'rgba(16,185,129,0.15)', color: 'var(--emerald)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 10 }}>設定済み</span>
-          )}
-        </h2>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px' }}>
-          課題・イベントのアラームをここで設定した Webhook URL に送信します。上記のチャンネル管理とは別に「通知専用チャンネル」を設定するのがお勧めです。
-        </p>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-          <input className="input" value={slackUrl} onChange={e => setSlackUrl(e.target.value)} placeholder="https://hooks.slack.com/services/..." style={{ flex: 1, fontFamily: 'monospace', fontSize: 12 }} />
-          <button className="btn-primary" onClick={saveSlackUrl} disabled={!slackUrl.trim()} style={{ flexShrink: 0 }}>
-            {slackSaveState === 'ok' ? '✓ 保存' : '保存'}
-          </button>
-        </div>
-        <button className="btn-secondary" onClick={testSlack} disabled={!slackUrl.trim() || slackTestState === 'loading'} style={{ fontSize: 13 }}>
-          {slackTestState === 'loading' ? <><Loader size={13} /> 送信中...</> : <><Send size={13} /> テスト送信</>}
-        </button>
-        {slackTestMsg && (
-          <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 6, fontSize: 13, background: slackTestState === 'ok' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${slackTestState === 'ok' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, color: slackTestState === 'ok' ? 'var(--emerald-light)' : '#ef4444' }}>
-            {slackTestMsg}
-          </div>
-        )}
-      </div>
-
       {/* ===== Browser Notifications ===== */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
         <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
           <Bell size={18} color="var(--sky)" />
           ブラウザ通知
@@ -505,7 +287,7 @@ export default function SettingsPage() {
             {notifState === 'granted' ? '✓ 許可済み' : notifState === 'denied' ? '✗ ブロック中' : '未設定'}
           </span>
         </h2>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 14px' }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 8px' }}>
           アプリを開いたとき、締切・イベント前日・当日に自動でお知らせします。
         </p>
         {notifState === 'denied' ? (
@@ -521,8 +303,53 @@ export default function SettingsPage() {
         )}
       </div>
 
+      {/* ===== Dashboard Alert Settings ===== */}
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
+        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AlertTriangle size={18} color="#f97316" />
+          ダッシュボード アラート
+        </h2>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 16px' }}>
+          期限が近いタスク・イベントをダッシュボード上部に表示します。
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={store.integrations.dashAlertEnabled}
+              onChange={e => store.updateIntegrations({ dashAlertEnabled: e.target.checked })}
+              style={{ accentColor: '#f97316', width: 16, height: 16 }}
+            />
+            <span style={{ fontSize: 14 }}>アラートを表示する</span>
+          </label>
+          {store.integrations.dashAlertEnabled && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)', flexShrink: 0 }}>通知タイミング</span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[2, 3, 5, 7].map(days => (
+                  <button
+                    key={days}
+                    onClick={() => store.updateIntegrations({ dashAlertDays: days })}
+                    style={{
+                      padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                      border: 'none', cursor: 'pointer',
+                      background: store.integrations.dashAlertDays === days
+                        ? 'linear-gradient(135deg, #f97316, #ef4444)'
+                        : 'var(--surface-2)',
+                      color: store.integrations.dashAlertDays === days ? 'white' : 'var(--text-muted)',
+                    }}
+                  >
+                    {days}日前
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* ===== Google Drive / Zapier ===== */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
         <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
           <HardDrive size={18} color="#4285F4" />
           バックアップ・データ管理
@@ -537,22 +364,10 @@ export default function SettingsPage() {
             {importMsg}
           </div>
         )}
-        <div className="card-2" style={{ padding: '12px 14px', fontSize: 12, lineHeight: 1.8, color: 'var(--text-muted)' }}>
-          <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>📧 Gmail 学校メール → Slack 自動転送（Zapier）</div>
-          <ol style={{ margin: 0, paddingLeft: 18 }}>
-            <li><a href="https://zapier.com" target="_blank" rel="noreferrer" style={{ color: 'var(--sky)' }}>zapier.com</a> で無料アカウントを作成</li>
-            <li>トリガー: <strong>Gmail: New Email Matching Search</strong></li>
-            <li>検索条件例: <code style={{ background: 'var(--bg)', padding: '1px 4px', borderRadius: 3 }}>from:n-high.jp OR subject:お知らせ</code></li>
-            <li>アクション: <strong>Slack: Send Channel Message</strong> → 通知チャンネルを指定</li>
-          </ol>
-          <div style={{ marginTop: 8, padding: '6px 10px', background: 'rgba(16,185,129,0.08)', borderRadius: 6, color: 'var(--emerald)' }}>
-            ✅ 学校メールが届くたびに Slack に自動通知（無料：100回/月）
-          </div>
-        </div>
       </div>
 
       {/* Subject Manager */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showSubjectManager ? 16 : 0 }}>
           <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>科目管理</h2>
           <button className="btn-secondary" onClick={() => setShowSubjectManager(!showSubjectManager)} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -570,12 +385,12 @@ export default function SettingsPage() {
                   <>
                     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                       {SUBJECT_COLORS.map(c => (
-                        <div key={c} onClick={() => setEditSubject(e => e ? { ...e, color: c } : e)} style={{ width: 18, height: 18, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, overflow: 'hidden', border: editSubject.color === c ? '2px solid white' : '1px solid rgba(255,255,255,0.2)' }}>
+                        <div key={c} onClick={() => setEditSubject(e => e ? { ...e, color: c } : e)} style={{ width: 18, height: 18, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, overflow: 'hidden', border: editSubject.color === c ? '2px solid var(--emerald)' : '1px solid var(--border)' }}>
                           <span style={{ display: 'block', width: '100%', height: '100%', background: c }} />
                         </div>
                       ))}
                     </div>
-                    <input className="input" value={editSubject.name} onChange={e => setEditSubject(x => x ? { ...x, name: e.target.value } : x)} style={{ flex: 1 }} autoFocus />
+                    <input className="input" value={editSubject.name} onChange={e => setEditSubject(x => x ? { ...x, name: e.target.value } : x)} style={{ flex: 1 }} autoFocus placeholder="科目名" title="科目名" />
                     <button className="btn-primary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => { store.updateSubject(s.id, { name: editSubject.name, color: editSubject.color }); setEditSubject(null) }}>保存</button>
                     <button className="btn-ghost" onClick={() => setEditSubject(null)}><X size={14} /></button>
                   </>

@@ -5,7 +5,67 @@ import { PRIORITY_COLORS, STATUS_COLORS } from '@/lib/utils'
 import type { AppEvent, Priority, TaskStatus } from '@/lib/types'
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CalendarDays, Plus, X } from 'lucide-react'
 import { useT } from '@/hooks/useT'
-import GradientText from '@/components/GradientText'
+
+
+const BAR_H = 16
+const BAR_GAP = 2
+const DATE_H = 22
+
+type Placement = {
+  ev: AppEvent
+  sc: number
+  ec: number
+  row: number
+  startsHere: boolean
+  endsHere: boolean
+}
+
+function assignEventRows(evs: AppEvent[], weekStart: string, weekEnd: string): Placement[] {
+  const weekEvents = evs
+    .filter(ev => ev.date <= weekEnd && (ev.endDate ?? ev.date) >= weekStart)
+    .sort((a, b) => {
+      const aSpan = new Date(a.endDate ?? a.date).getTime() - new Date(a.date).getTime()
+      const bSpan = new Date(b.endDate ?? b.date).getTime() - new Date(b.date).getTime()
+      return bSpan - aSpan
+    })
+
+  const rows: [string, string][][] = []
+  const placements: Placement[] = []
+
+  const dateToCol = (date: string) => {
+    const d = new Date(date + 'T00:00:00')
+    const ws = new Date(weekStart + 'T00:00:00')
+    const we = new Date(weekEnd + 'T00:00:00')
+    if (d <= ws) return 0
+    if (d >= we) return 6
+    return Math.round((d.getTime() - ws.getTime()) / 86400000)
+  }
+
+  for (const ev of weekEvents) {
+    const evStart = ev.date
+    const evEnd = ev.endDate ?? ev.date
+    const sc = dateToCol(evStart < weekStart ? weekStart : evStart)
+    const ec = dateToCol(evEnd > weekEnd ? weekEnd : evEnd)
+    const startsHere = evStart >= weekStart
+    const endsHere = evEnd <= weekEnd
+
+    let placed = false
+    for (let r = 0; r < rows.length; r++) {
+      const overlaps = rows[r].some(([s, e]) => s <= evEnd && e >= evStart)
+      if (!overlaps) {
+        rows[r].push([evStart, evEnd])
+        placements.push({ ev, sc, ec, row: r, startsHere, endsHere })
+        placed = true
+        break
+      }
+    }
+    if (!placed) {
+      rows.push([[evStart, evEnd]])
+      placements.push({ ev, sc, ec, row: rows.length - 1, startsHere, endsHere })
+    }
+  }
+  return placements
+}
 
 export default function CalendarPage() {
   const { tasks, subjects, events, language, addTask, addEvent } = useStore()
@@ -18,18 +78,23 @@ export default function CalendarPage() {
   const [quickSubjectId, setQuickSubjectId] = useState('')
   const [quickEventType, setQuickEventType] = useState<AppEvent['type']>('event')
   const [expandedEventIds, setExpandedEventIds] = useState<Set<string>>(new Set())
-  const toggleEventExpand = (id: string) => setExpandedEventIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggleEventExpand = (id: string) => setExpandedEventIds(prev => {
+    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n
+  })
+
+  const typeColors: Record<AppEvent['type'], string> = {
+    schooling: '#0ea5e9', exam: '#ef4444', event: '#10b981',
+    meeting: '#8b5cf6', club: '#f97316', other: '#8a92a6',
+  }
 
   function submitQuick() {
     if (!quickTitle.trim() || !selectedDate) return
     if (addMode === 'task') {
       addTask({ title: quickTitle.trim(), dueDate: selectedDate, priority: 'medium', status: 'pending', type: 'homework', subjectId: quickSubjectId || undefined })
     } else if (addMode === 'event') {
-      addEvent({ title: quickTitle.trim(), date: selectedDate, type: quickEventType, color: { schooling: '#0ea5e9', exam: '#ef4444', event: '#10b981', meeting: '#8b5cf6', other: '#8a92a6' }[quickEventType] })
+      addEvent({ title: quickTitle.trim(), date: selectedDate, type: quickEventType, color: typeColors[quickEventType] })
     }
-    setQuickTitle('')
-    setQuickSubjectId('')
-    setAddMode(null)
+    setQuickTitle(''); setQuickSubjectId(''); setAddMode(null)
   }
 
   const today = new Date().toISOString().split('T')[0]
@@ -38,8 +103,8 @@ export default function CalendarPage() {
   const tStatus = (s: TaskStatus) => ({ pending: t('status_pending'), 'in-progress': t('status_inprogress'), completed: t('status_completed') }[s])
   const tEventType = (tp: AppEvent['type']) => ({
     schooling: t('event_schooling'), exam: t('event_exam'), event: t('event_event'),
-    meeting: t('event_meeting'), other: t('type_other'),
-  }[tp])
+    meeting: t('event_meeting'), club: t('event_club'), other: t('type_other'),
+  }[tp] ?? tp)
 
   const WEEKDAYS = [t('day_sun'), t('day_mon'), t('day_tue'), t('day_wed'), t('day_thu'), t('day_fri'), t('day_sat')]
 
@@ -47,14 +112,8 @@ export default function CalendarPage() {
     ? `${year}年${month + 1}月`
     : new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
-  function prevMonth() {
-    if (month === 0) { setMonth(11); setYear(y => y - 1) }
-    else setMonth(m => m - 1)
-  }
-  function nextMonth() {
-    if (month === 11) { setMonth(0); setYear(y => y + 1) }
-    else setMonth(m => m + 1)
-  }
+  function prevMonth() { if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1) }
+  function nextMonth() { if (month === 11) { setMonth(0); setYear(y => y + 1) } else setMonth(m => m + 1) }
 
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -65,17 +124,20 @@ export default function CalendarPage() {
     const d = daysInPrev - i
     const m = month === 0 ? 12 : month
     const y = month === 0 ? year - 1 : year
-    cells.push({ date: `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`, day: d, otherMonth: true })
+    cells.push({ date: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`, day: d, otherMonth: true })
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    cells.push({ date: `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`, day: d, otherMonth: false })
+    cells.push({ date: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, day: d, otherMonth: false })
   }
   const remaining = 42 - cells.length
   for (let d = 1; d <= remaining; d++) {
     const m = month === 11 ? 1 : month + 2
     const y = month === 11 ? year + 1 : year
-    cells.push({ date: `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`, day: d, otherMonth: true })
+    cells.push({ date: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`, day: d, otherMonth: true })
   }
+
+  const weeks: typeof cells[] = []
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
 
   const tasksByDate = tasks.reduce<Record<string, typeof tasks>>((acc, task) => {
     if (!task.dueDate) return acc
@@ -83,8 +145,14 @@ export default function CalendarPage() {
     return acc
   }, {})
 
+  // Expand multi-day events to all their dates for the side panel
   const eventsByDate = events.reduce<Record<string, AppEvent[]>>((acc, ev) => {
-    acc[ev.date] = [...(acc[ev.date] ?? []), ev]
+    const start = new Date(ev.date + 'T00:00:00')
+    const end = new Date((ev.endDate ?? ev.date) + 'T00:00:00')
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const ds = d.toISOString().split('T')[0]
+      acc[ds] = [...(acc[ds] ?? []), ev]
+    }
     return acc
   }, {})
 
@@ -94,26 +162,17 @@ export default function CalendarPage() {
   const hasItems = selectedTasks.length > 0 || selectedEvents.length > 0
 
   function handleDateClick(date: string) {
-    if (date === selectedDate) {
-      setSelectedDate(null)
-      setAddMode(null)
-      setQuickTitle('')
-    } else {
-      setSelectedDate(date)
-      setAddMode(null)
-      setQuickTitle('')
-    }
+    if (date === selectedDate) { setSelectedDate(null); setAddMode(null); setQuickTitle('') }
+    else { setSelectedDate(date); setAddMode(null); setQuickTitle('') }
   }
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}><GradientText>{t('cal_title')}</GradientText></h1>
+    <div style={{ padding: '16px 14px', width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, color: 'var(--text)' }}>{t('cal_title')}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button className="btn-secondary" onClick={prevMonth} style={{ padding: '6px 10px' }}><ChevronLeft size={16} /></button>
-          <span style={{ fontSize: 16, fontWeight: 700, minWidth: 120, textAlign: 'center' }}>
-            {monthYearLabel}
-          </span>
+          <span style={{ fontSize: 16, fontWeight: 700, minWidth: 120, textAlign: 'center' }}>{monthYearLabel}</span>
           <button className="btn-secondary" onClick={nextMonth} style={{ padding: '6px 10px' }}><ChevronRight size={16} /></button>
           <button className="btn-ghost" onClick={() => { setYear(new Date().getFullYear()); setMonth(new Date().getMonth()) }} style={{ fontSize: 12 }}>
             {t('cal_today')}
@@ -126,76 +185,124 @@ export default function CalendarPage() {
           {/* Weekday headers */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, marginBottom: 4 }}>
             {WEEKDAYS.map((d, i) => (
-              <div key={d} style={{
-                textAlign: 'center', fontSize: 15, fontWeight: 700, padding: '10px 0',
+              <div key={i} style={{
+                textAlign: 'center', fontSize: 12, fontWeight: 700, padding: '5px 0',
                 color: i === 0 ? '#ef4444' : i === 6 ? 'var(--sky)' : 'var(--text)',
-                background: 'rgba(15,15,20,0.65)',
-                backdropFilter: 'blur(2px)',
-                WebkitBackdropFilter: 'blur(2px)',
-                borderRadius: 6,
+                background: 'var(--surface-2)', borderRadius: 6,
               }}>{d}</div>
             ))}
           </div>
 
-          {/* Calendar grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridAutoRows: '1fr', gap: 1, background: 'rgba(255,255,255,0.06)', borderRadius: 8, overflow: 'hidden', minHeight: 'calc(100vh - 200px)' }}>
-            {cells.map(({ date, day, otherMonth }, i) => {
-              const dayTasks = tasksByDate[date] ?? []
-              const dayEvents = eventsByDate[date] ?? []
-              const isToday = date === today
-              const isSelected = date === selectedDate
-              const weekday = i % 7
+          {/* Calendar — one row per week */}
+          <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
+            {weeks.map((week, wi) => {
+              const weekStart = week[0].date
+              const weekEnd = week[6].date
+              const placements = assignEventRows(events, weekStart, weekEnd)
+              const numRows = placements.length > 0 ? Math.max(...placements.map(p => p.row)) + 1 : 0
+              const barAreaH = numRows > 0 ? numRows * (BAR_H + BAR_GAP) + 4 : 0
+              const contentTop = DATE_H + barAreaH
 
               return (
-                <div
-                  key={date}
-                  onClick={() => handleDateClick(date)}
-                  className={`calendar-day ${isToday ? 'today' : ''} ${otherMonth ? 'other-month' : ''}`}
-                  style={{
-                    cursor: 'pointer',
-                    background: isSelected ? 'rgba(16,185,129,0.18)' : isToday ? 'rgba(16,185,129,0.08)' : 'rgba(15,15,20,0.55)',
-                    borderColor: isSelected ? 'var(--emerald)' : isToday ? 'var(--emerald)' : 'rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <div style={{
-                    fontSize: 15, fontWeight: isToday ? 700 : 500,
-                    color: isToday ? 'var(--emerald)' : weekday === 0 ? '#ef4444' : weekday === 6 ? 'var(--sky)' : 'var(--text)',
-                    marginBottom: 6,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}>
-                    {isToday && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--emerald)', flexShrink: 0 }} />}
-                    {day}
+                <div key={wi} style={{
+                  position: 'relative',
+                  borderBottom: wi < weeks.length - 1 ? '1px solid var(--divider)' : 'none',
+                }}>
+                  {/* Day cells */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+                    {week.map(({ date, day, otherMonth }, ci) => {
+                      const dayTasks = tasksByDate[date] ?? []
+                      const isToday = date === today
+                      const isSelected = date === selectedDate
+                      const weekday = ci
+
+                      return (
+                        <div
+                          key={date}
+                          onClick={() => handleDateClick(date)}
+                          style={{
+                            borderRight: ci < 6 ? '1px solid var(--divider)' : 'none',
+                            borderTop: isToday || isSelected ? '2px solid var(--emerald)' : '2px solid transparent',
+                            cursor: 'pointer',
+                            background: isSelected
+                              ? 'rgba(16,185,129,0.18)'
+                              : isToday ? 'rgba(16,185,129,0.08)'
+                                : 'var(--surface)',
+                            minHeight: Math.max(90, contentTop + 20),
+                            opacity: otherMonth ? 0.38 : 1,
+                            position: 'relative',
+                          }}
+                        >
+                          {/* Date number */}
+                          <div style={{
+                            position: 'absolute', top: 4, left: 5,
+                            fontSize: 12, fontWeight: isToday ? 800 : 500,
+                            color: isToday ? 'var(--emerald)' : weekday === 0 ? '#ef4444' : weekday === 6 ? 'var(--sky)' : 'var(--text)',
+                            display: 'flex', alignItems: 'center', gap: 3,
+                          }}>
+                            {isToday && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--emerald)' }} />}
+                            {day}
+                          </div>
+
+                          {/* Task chips below event bar area */}
+                          <div style={{ paddingTop: contentTop, paddingLeft: 4, paddingRight: 4, paddingBottom: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {dayTasks.slice(0, 2).map(task => (
+                              <div key={task.id} style={{
+                                fontSize: 10, padding: '1px 4px', borderRadius: 3,
+                                backgroundColor: getSubjectColor(task.subjectId) + '30',
+                                borderLeft: `2px solid ${getSubjectColor(task.subjectId)}`,
+                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                opacity: task.status === 'completed' ? 0.4 : 1,
+                              }}>
+                                {task.title}
+                              </div>
+                            ))}
+                            {dayTasks.length > 2 && (
+                              <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 2 }}>+{dayTasks.length - 2}</div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {dayTasks.slice(0, 3).map(task => (
-                      <div key={task.id} style={{
-                        fontSize: 11, padding: '2px 5px', borderRadius: 3,
-                        backgroundColor: getSubjectColor(task.subjectId) + '30', forcedColorAdjust: 'none',
-                        borderLeft: `2px solid ${getSubjectColor(task.subjectId)}`,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        opacity: task.status === 'completed' ? 0.5 : 1,
-                        textDecoration: task.status === 'completed' ? 'line-through' : 'none',
-                      }}>
-                        {task.title}
-                      </div>
-                    ))}
-                    {dayEvents.slice(0, 3).map(ev => (
-                      <div key={ev.id} style={{
-                        fontSize: 11, padding: '2px 5px', borderRadius: 3,
-                        backgroundColor: ev.color + '30', forcedColorAdjust: 'none',
-                        display: 'flex', alignItems: 'center', gap: 3,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>
-                        <span style={{ width: 7, height: 7, borderRadius: 1, backgroundColor: ev.color, flexShrink: 0, display: 'inline-block', forcedColorAdjust: 'none' } as React.CSSProperties} />
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</span>
-                      </div>
-                    ))}
-                    {(dayTasks.length + dayEvents.length) > 6 && (
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 4 }}>
-                        +{dayTasks.length + dayEvents.length - 6}
-                      </div>
-                    )}
-                  </div>
+
+                  {/* Multi-day event bars — absolutely positioned over the day cells */}
+                  {placements.length > 0 && (
+                    <div style={{ position: 'absolute', top: DATE_H, left: 0, right: 0, pointerEvents: 'none' }}>
+                      {placements.map(({ ev, sc, ec, row, startsHere, endsHere }) => {
+                        const leftPct = sc / 7 * 100
+                        const widthPct = (ec - sc + 1) / 7 * 100
+                        const rTL = startsHere ? 3 : 0
+                        const rBL = startsHere ? 3 : 0
+                        const rTR = endsHere ? 3 : 0
+                        const rBR = endsHere ? 3 : 0
+                        return (
+                          <div
+                            key={`${wi}-${ev.id}`}
+                            style={{
+                              position: 'absolute',
+                              left: `calc(${leftPct}% + ${startsHere ? 3 : 0}px)`,
+                              width: `calc(${widthPct}% - ${(startsHere ? 3 : 0) + (endsHere ? 3 : 0)}px)`,
+                              top: row * (BAR_H + BAR_GAP) + 2,
+                              height: BAR_H,
+                              background: ev.color,
+                              opacity: 0.88,
+                              borderRadius: `${rTL}px ${rTR}px ${rBR}px ${rBL}px`,
+                              display: 'flex', alignItems: 'center',
+                              paddingLeft: startsHere ? 6 : 2,
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {startsHere && (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {ev.title}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -210,17 +317,13 @@ export default function CalendarPage() {
               {new Date(selectedDate + 'T00:00:00').toLocaleDateString(language === 'ja' ? 'ja-JP' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}
             </h3>
 
-            {/* 既存イベント */}
             {selectedEvents.length > 0 && (
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sky)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{t('cal_events_label')}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {selectedEvents.map(ev => (
                     <div key={ev.id} className="card-2" style={{ borderLeft: `3px solid ${ev.color}`, overflow: 'hidden' }}>
-                      <div
-                        onClick={() => toggleEventExpand(ev.id)}
-                        style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}
-                      >
+                      <div onClick={() => toggleEventExpand(ev.id)} style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 600 }}>{ev.title}</div>
                           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -237,9 +340,7 @@ export default function CalendarPage() {
                       </div>
                       {ev.description && expandedEventIds.has(ev.id) && (
                         <div style={{ padding: '0 12px 10px', borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-                          <div style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-                            {ev.description}
-                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{ev.description}</div>
                         </div>
                       )}
                     </div>
@@ -248,7 +349,6 @@ export default function CalendarPage() {
               </div>
             )}
 
-            {/* 既存タスク */}
             {selectedTasks.length > 0 && (
               <div style={{ marginBottom: 12 }}>
                 {selectedEvents.length > 0 && <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{t('cal_tasks_label')}</div>}
@@ -260,8 +360,8 @@ export default function CalendarPage() {
                         <span className={`badge ${PRIORITY_COLORS[task.priority]}`} style={{ fontSize: 10, flexShrink: 0 }}>{tPriority(task.priority)}</span>
                       </div>
                       {subjects.find(s => s.id === task.subjectId) && (
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: getSubjectColor(task.subjectId), marginRight: 5, forcedColorAdjust: 'none' } as React.CSSProperties} />
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: getSubjectColor(task.subjectId), flexShrink: 0 }} />
                           {subjects.find(s => s.id === task.subjectId)?.name}
                         </div>
                       )}
@@ -276,21 +376,12 @@ export default function CalendarPage() {
               <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>{t('cal_no_schedule')}</div>
             )}
 
-            {/* インライン追加フォーム */}
             {addMode ? (
               <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: addMode === 'task' ? 'var(--emerald)' : 'var(--sky)' }}>
                   {addMode === 'task' ? '✅ 課題を追加' : '📌 イベントを追加'}
                 </div>
-                <input
-                  className="input"
-                  placeholder={addMode === 'task' ? '課題名...' : 'イベント名...'}
-                  value={quickTitle}
-                  onChange={e => setQuickTitle(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && submitQuick()}
-                  autoFocus
-                  style={{ fontSize: 13 }}
-                />
+                <input className="input" placeholder={addMode === 'task' ? '課題名...' : 'イベント名...'} value={quickTitle} onChange={e => setQuickTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitQuick()} autoFocus style={{ fontSize: 13 }} />
                 {addMode === 'task' ? (
                   <select className="input" value={quickSubjectId} onChange={e => setQuickSubjectId(e.target.value)} style={{ fontSize: 13 }}>
                     <option value="">科目（任意）</option>
@@ -302,6 +393,7 @@ export default function CalendarPage() {
                     <option value="schooling">スクーリング</option>
                     <option value="exam">試験</option>
                     <option value="meeting">面談</option>
+                    <option value="club">部活</option>
                     <option value="other">その他</option>
                   </select>
                 )}

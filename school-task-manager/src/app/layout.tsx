@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import './globals.css'
 import Sidebar from '@/components/Sidebar'
 import BackgroundProvider from '@/components/BackgroundProvider'
@@ -9,6 +10,7 @@ import AlarmManager from '@/components/AlarmManager'
 import MobileHeader from '@/components/MobileHeader'
 import PWAUpdateNotifier from '@/components/PWAUpdateNotifier'
 import HeaderBanner from '@/components/HeaderBanner'
+import ThemeApplier from '@/components/ThemeApplier'
 
 export const metadata: Metadata = {
   title: 'Ritsuki Dashboard',
@@ -29,16 +31,18 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* Anti-flash: apply saved theme before React hydrates */}
+        <Script id="theme-init" strategy="beforeInteractive">{`(function(){try{var s=JSON.parse(localStorage.getItem('school-task-manager')||'{}');var m=s&&s.state&&s.state.integrations&&s.state.integrations.themeMode;document.documentElement.setAttribute('data-theme',m==='light'?'light':'dark');}catch(e){}})();`}</Script>
         {/* Injected raw — bypasses Tailwind/Lightning CSS transform */}
         <meta name="color-scheme" content="dark" />
         <style dangerouslySetInnerHTML={{ __html: `
           .gradient-text {
-            background-image: linear-gradient(135deg, #34d399 0%, #38bdf8 100%) !important;
+            background-image: linear-gradient(135deg, var(--emerald-light, #34d399) 0%, var(--sky-light, #38bdf8) 100%) !important;
             -webkit-background-clip: text !important;
             -webkit-text-fill-color: transparent !important;
             background-clip: text !important;
@@ -55,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ` }} />
       </head>
       <body style={{ margin: 0, minHeight: '100vh' }}>
+        <ThemeApplier />
         <BackgroundProvider />
         <SupabaseSync />
         <NotificationInit />

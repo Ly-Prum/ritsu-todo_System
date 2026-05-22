@@ -66,7 +66,7 @@ export interface AppEvent {
   endDate?: string
   startTime?: string  // HH:MM
   endTime?: string    // HH:MM
-  type: 'schooling' | 'exam' | 'event' | 'meeting' | 'other'
+  type: 'schooling' | 'exam' | 'event' | 'meeting' | 'club' | 'other'
   location?: string
   linkedMemoId?: string
   alarmMinutesBefore?: number  // 0=当日, 60=1時間前, 1440=1日前

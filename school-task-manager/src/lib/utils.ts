@@ -24,14 +24,22 @@ export const TYPE_LABELS = {
 export const DAY_LABELS = ['日', '月', '火', '水', '木', '金', '土']
 
 export const SUBJECT_COLORS = [
+  // Vivid
   '#10b981', '#0ea5e9', '#14b8a6', '#3b82f6',
   '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899',
-  '#06b6d4', '#84cc16',
+  '#06b6d4', '#84cc16', '#f97316', '#a855f7',
+  // Pastel
+  '#6ee7b7', '#7dd3fc', '#5eead4', '#93c5fd',
+  '#c4b5fd', '#fcd34d', '#fca5a5', '#f9a8d4',
+  '#67e8f9', '#bef264', '#fdba74', '#d8b4fe',
+  '#fbcfe8', '#fed7aa', '#bbf7d0', '#bae6fd',
 ]
 
 export const MEMO_COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e',
   '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899',
+  '#fca5a5', '#fdba74', '#fde68a', '#86efac',
+  '#5eead4', '#93c5fd', '#c4b5fd', '#f9a8d4',
 ]
 
 export const EVENT_TYPE_LABELS = {
@@ -39,9 +47,14 @@ export const EVENT_TYPE_LABELS = {
   exam: '試験',
   event: 'イベント',
   meeting: '面談',
+  club: '部活',
   other: 'その他',
 }
-export const EVENT_COLORS = ['#10b981','#0ea5e9','#8b5cf6','#f97316','#ef4444','#ec4899']
+export const EVENT_COLORS = [
+  '#10b981','#0ea5e9','#8b5cf6','#f97316','#ef4444','#ec4899',
+  '#14b8a6','#3b82f6','#f59e0b','#84cc16','#06b6d4','#a855f7',
+  '#6ee7b7','#7dd3fc','#c4b5fd','#fcd34d','#fca5a5','#f9a8d4',
+]
 
 export function getDaysUntilDue(dueDate: string): number {
   const due = new Date(dueDate)

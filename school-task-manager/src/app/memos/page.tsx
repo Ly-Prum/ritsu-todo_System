@@ -4,9 +4,14 @@ import { useStore } from '@/lib/store'
 import { MEMO_COLORS } from '@/lib/utils'
 import type { Memo } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, Pin, PinOff, Search, StickyNote } from 'lucide-react'
-import GradientText from '@/components/GradientText'
+
 
 const emptyForm = { title: '', content: '', category: '', isPinned: false, color: MEMO_COLORS[0] }
+
+const TEXT = '#1a1d23'
+const TEXT_MUTED = '#6b7280'
+const DIVIDER = 'rgba(0,0,0,0.10)'
+const BTN_BG = 'rgba(0,0,0,0.08)'
 
 export default function MemosPage() {
   const { memos, addMemo, updateMemo, deleteMemo } = useStore()
@@ -50,10 +55,10 @@ export default function MemosPage() {
   }
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
+    <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><GradientText>メモ</GradientText></h1>
+          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, marginBottom: 4, color: 'var(--text)' }}>メモ</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{memos.length} 件のメモ</p>
         </div>
         <button className="btn-primary" onClick={openNew}><Plus size={14} /> 新しいメモ</button>
@@ -89,49 +94,49 @@ export default function MemosPage() {
               onClick={() => setExpandedId(memo.id === expandedId ? null : memo.id)}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1a1d23', flex: 1 }}>{memo.title}</h3>
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: TEXT, flex: 1 }}>{memo.title}</h3>
                 <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-                  {memo.isPinned && <Pin size={12} color="#10b981" />}
+                  {memo.isPinned && <Pin size={12} color={TEXT} />}
                   <button
                     onClick={e => { e.stopPropagation(); updateMemo(memo.id, { isPinned: !memo.isPinned }) }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', opacity: 0.6 }}
                     title={memo.isPinned ? 'ピン解除' : 'ピン留め'}
                   >
-                    {memo.isPinned ? <PinOff size={13} color="#1a1d23" /> : <Pin size={13} color="#1a1d23" />}
+                    {memo.isPinned ? <PinOff size={13} color={TEXT} /> : <Pin size={13} color={TEXT} />}
                   </button>
                 </div>
               </div>
 
               {memo.category && (
-                <div style={{ fontSize: 10, fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>
                   {memo.category}
                 </div>
               )}
 
               <div style={{
-                fontSize: 12, color: '#374151', marginTop: 8, lineHeight: 1.6,
+                fontSize: 13, fontWeight: 600, color: TEXT, marginTop: 8, lineHeight: 1.6,
                 maxHeight: expandedId === memo.id ? 'none' : '72px',
                 overflow: 'hidden',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
               }}>
-                {memo.content || <span style={{ opacity: 0.5 }}>内容なし</span>}
+                {memo.content || <span style={{ opacity: 0.4 }}>内容なし</span>}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 8, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                <span style={{ fontSize: 10, color: '#6b7280' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 8, borderTop: `1px solid ${DIVIDER}` }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: TEXT_MUTED }}>
                   {new Date(memo.updatedAt).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })}
                 </span>
                 <div style={{ display: 'flex', gap: 4 }}>
                   <button
                     onClick={e => { e.stopPropagation(); openEdit(memo) }}
-                    style={{ background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 4, padding: '3px 6px', cursor: 'pointer', color: '#374151' }}
+                    style={{ background: BTN_BG, border: 'none', borderRadius: 4, padding: '3px 6px', cursor: 'pointer', color: TEXT }}
                   >
                     <Pencil size={11} />
                   </button>
                   <button
                     onClick={e => { e.stopPropagation(); if (confirm('削除しますか？')) deleteMemo(memo.id) }}
-                    style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 4, padding: '3px 6px', cursor: 'pointer', color: '#ef4444' }}
+                    style={{ background: 'rgba(239,68,68,0.15)', border: 'none', borderRadius: 4, padding: '3px 6px', cursor: 'pointer', color: '#dc2626' }}
                   >
                     <Trash2 size={11} />
                   </button>
@@ -169,7 +174,7 @@ export default function MemosPage() {
                   {MEMO_COLORS.map(c => (
                     <div key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{
                       width: 28, height: 28, borderRadius: 6, cursor: 'pointer', flexShrink: 0, overflow: 'hidden',
-                      border: form.color === c ? '3px solid #34d399' : '2px solid rgba(255,255,255,0.2)',
+                      border: form.color === c ? '3px solid var(--emerald)' : '2px solid var(--border)',
                     }}>
                       <span style={{ display: 'block', width: '100%', height: '100%', background: c }} />
                     </div>

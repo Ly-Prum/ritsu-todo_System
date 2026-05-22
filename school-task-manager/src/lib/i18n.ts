@@ -3,11 +3,11 @@ export type Lang = 'ja' | 'en'
 const ja = {
   // Navigation
   nav_dashboard: 'ダッシュボード',
-  nav_tasks: '課題・レポート',
+  nav_tasks: 'レポート',
+  nav_progress: '教科別進捗',
   nav_calendar: 'カレンダー',
   nav_events: 'イベント',
   nav_links: 'マイリンク',
-  nav_timetable: '時間割',
   nav_memos: 'メモ',
   nav_settings: '設定・データ',
   nav_menu: 'メニュー',
@@ -85,6 +85,7 @@ const ja = {
   event_exam: '試験',
   event_event: 'イベント',
   event_meeting: '面談',
+  event_club: '部活',
   event_other: 'その他',
 
   // Dashboard
@@ -277,11 +278,11 @@ const ja = {
 
 const en: typeof ja = {
   nav_dashboard: 'Dashboard',
-  nav_tasks: 'Tasks',
+  nav_tasks: 'Reports',
+  nav_progress: 'Subject Progress',
   nav_calendar: 'Calendar',
   nav_events: 'Events',
   nav_links: 'My Links',
-  nav_timetable: 'Timetable',
   nav_memos: 'Memos',
   nav_settings: 'Settings',
   nav_menu: 'Menu',
@@ -352,6 +353,7 @@ const en: typeof ja = {
   event_exam: 'Exam',
   event_event: 'Event',
   event_meeting: 'Meeting',
+  event_club: 'Club',
   event_other: 'Other',
 
   dash_title: 'Ritsuki Dashboard',

@@ -8,7 +8,7 @@ import {
 import type { Task, Subject, Priority, TaskStatus, TaskType } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, CheckCircle2, Circle, Clock, Filter, Search } from 'lucide-react'
 import { useT } from '@/hooks/useT'
-import GradientText from '@/components/GradientText'
+
 
 const emptyForm = {
   title: '', description: '', subjectId: '', dueDate: '',
@@ -124,10 +124,10 @@ export default function TasksPage() {
   const getSubjectColor = (id?: string) => subjects.find(s => s.id === id)?.color ?? '#8a92a6'
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
+    <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}><GradientText>{t('tasks_title')}</GradientText></h1>
+          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, marginBottom: 4, color: 'var(--text)' }}>{t('tasks_title')}</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
             {tasks.length}{t('tasks_stat_registered')} · {tasks.filter(task => task.status === 'completed').length}{t('tasks_stat_done')}
           </p>
@@ -405,7 +405,7 @@ export default function TasksPage() {
                       onClick={() => setNewSubject(s => ({ ...s, color: c }))}
                       style={{
                         backgroundColor: c,
-                        border: newSubject.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
+                        border: newSubject.color === c ? '3px solid var(--emerald)' : '2px solid var(--border)',
                         width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, padding: 0,
                       }}
                       className="forced-color-adjust-none active:scale-95 transition-transform focus:outline-none"
@@ -457,13 +457,13 @@ function GaugeCard({ label, value, total, color, subtitle }: {
   return (
     <div style={{
       background: 'var(--surface-2)', borderRadius: 12, padding: '14px 12px 10px',
-      border: '1px solid #353548',
+      border: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 130,
     }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6, textAlign: 'center' }}>{label}</div>
       <svg width="88" height="44" viewBox="4 -6 92 52" style={{ display: 'block' }}>
         <path d="M 8 0 A 42 42 0 0 1 92 0"
-          fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" strokeLinecap="round" />
+          fill="none" stroke="var(--progress-track)" strokeWidth="8" strokeLinecap="round" />
         {p > 0.001 && (
           <path d={`M 8 0 A ${r} ${r} 0 ${la} 1 ${ex} ${ey}`}
             fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" />
@@ -567,7 +567,7 @@ function ProgressTable({ subjects, tasks, updateSubject, addSubject, progressEdi
       <div className="card" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
           <thead>
-            <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+            <tr style={{ background: 'var(--thead-bg)' }}>
               <th style={th}>科目</th>
               <th style={th}>レポート<br /><span style={{ fontWeight: 400, fontSize: 10 }}>提出済/全回数</span></th>
               <th style={th}>スクーリング<br /><span style={{ fontWeight: 400, fontSize: 10 }}>出席(+申込)/全コマ</span></th>

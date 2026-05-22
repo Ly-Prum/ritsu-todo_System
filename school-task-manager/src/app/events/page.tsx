@@ -4,7 +4,7 @@ import { useStore } from '@/lib/store'
 import { EVENT_TYPE_LABELS, EVENT_COLORS } from '@/lib/utils'
 import type { AppEvent } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, CalendarCheck, MapPin, Bell, Clock, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
-import GradientText from '@/components/GradientText'
+
 
 type EventType = AppEvent['type']
 type FilterType = 'all' | EventType
@@ -135,18 +135,17 @@ export default function EventsPage() {
     exam: '#ef4444',
     event: '#10b981',
     meeting: '#8b5cf6',
+    club: '#f97316',
     other: '#8a92a6',
   }
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, margin: '0 auto' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4 }}>
-          <GradientText>イベント管理</GradientText>
+    <div style={{ padding: '16px 14px', maxWidth: 1600 }}>
+      <div style={{ marginBottom: 14, display: 'flex', alignItems: 'baseline', gap: 10 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0 }}>
+          イベント管理
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
-          スクーリング・試験・イベントを管理
-        </p>
+        <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>スクーリング・試験・イベントを管理</span>
       </div>
 
       {/* イベント追加バー */}
@@ -217,17 +216,17 @@ export default function EventsPage() {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {upcoming.map(ev => (
-              <div key={ev.id} className="card-2" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, borderLeft: `4px solid ${ev.color}` }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{ev.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                    {formatDate(ev.date)}{ev.location && ` · ${ev.location}`}
-                  </div>
+              <div key={ev.id} className="card-2" style={{ padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 8, borderLeft: `3px solid ${ev.color}` }}>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 700, fontSize: 13 }}>{ev.title}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {formatDate(ev.date)}{ev.startTime ? ` ${ev.startTime}` : ''}{ev.location ? ` · ${ev.location}` : ''}
+                  </span>
                 </div>
                 <span style={{
-                  fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 9999,
+                  fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 9999,
                   background: typeColors[ev.type] + '25', color: typeColors[ev.type],
-                  border: `1px solid ${typeColors[ev.type]}40`,
+                  border: `1px solid ${typeColors[ev.type]}40`, flexShrink: 0,
                 }}>
                   {EVENT_TYPE_LABELS[ev.type]}
                 </span>
@@ -239,7 +238,7 @@ export default function EventsPage() {
 
       {/* Filter tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-        {(['all', 'schooling', 'exam', 'event', 'meeting', 'other'] as FilterType[]).map(t => (
+        {(['all', 'schooling', 'exam', 'event', 'meeting', 'club', 'other'] as FilterType[]).map(t => (
           <button
             key={t}
             onClick={() => setFilterType(t)}
@@ -288,64 +287,60 @@ export default function EventsPage() {
                 {/* Header row — click to expand */}
                 <div
                   onClick={() => toggleExpand(ev.id)}
-                  style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
+                  style={{ padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>{ev.title}</span>
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 9999,
-                        background: typeColors[ev.type] + '25', color: typeColors[ev.type],
-                        border: `1px solid ${typeColors[ev.type]}40`,
-                      }}>
-                        {EVENT_TYPE_LABELS[ev.type]}
-                      </span>
-                      {ev.alarmMinutesBefore !== undefined && (
-                        <Bell size={12} color="var(--text-muted)" />
-                      )}
-                    </div>
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Calendar size={15} color="var(--sky-light)" style={{ flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>{ev.title}</span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 9999,
+                      background: typeColors[ev.type] + '25', color: typeColors[ev.type],
+                      border: `1px solid ${typeColors[ev.type]}40`, flexShrink: 0,
+                    }}>
+                      {EVENT_TYPE_LABELS[ev.type]}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <Calendar size={11} style={{ flexShrink: 0 }} />
                         {formatDate(ev.date)}{ev.endDate && ev.endDate !== ev.date ? ` 〜 ${formatDate(ev.endDate)}` : ''}
                       </span>
                       {(ev.startTime || ev.endTime) && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Clock size={15} color="var(--sky-light)" style={{ flexShrink: 0 }} />
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <Clock size={11} style={{ flexShrink: 0 }} />
                           {ev.startTime}{ev.endTime ? ` 〜 ${ev.endTime}` : ''}
                         </span>
                       )}
                       {ev.location && (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                          <MapPin size={11} /> {ev.location}
+                          <MapPin size={10} />{ev.location}
                         </span>
                       )}
-                    </div>
+                      {ev.alarmMinutesBefore !== undefined && <Bell size={10} />}
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                     {ev.description && (
-                      expandedIds.has(ev.id) ? <ChevronUp size={14} color="var(--text-muted)" /> : <ChevronDown size={14} color="var(--text-muted)" />
+                      expandedIds.has(ev.id) ? <ChevronUp size={13} color="var(--text-muted)" /> : <ChevronDown size={13} color="var(--text-muted)" />
                     )}
                     <button
                       className="btn-secondary"
                       onClick={e => { e.stopPropagation(); openEdit(ev) }}
-                      style={{ padding: '6px 10px', fontSize: 12 }}
+                      style={{ padding: '4px 8px', fontSize: 12 }}
                     >
-                      <Pencil size={13} />
+                      <Pencil size={12} />
                     </button>
                     <button
                       className="btn-danger"
                       onClick={e => { e.stopPropagation(); if (confirm('削除しますか？')) deleteEvent(ev.id) }}
-                      style={{ padding: '6px 10px', fontSize: 12 }}
+                      style={{ padding: '4px 8px', fontSize: 12 }}
                     >
-                      <Trash2 size={13} />
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 </div>
                 {/* Expanded description */}
                 {ev.description && expandedIds.has(ev.id) && (
-                  <div style={{ padding: '0 16px 14px', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+                  <div style={{ padding: '8px 12px 10px', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
                       {ev.description}
                     </div>
                   </div>
@@ -422,7 +417,7 @@ export default function EventsPage() {
                   {EVENT_COLORS.map(c => (
                     <div key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{
                       width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', flexShrink: 0, overflow: 'hidden',
-                      border: form.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
+                      border: form.color === c ? '3px solid var(--emerald)' : '2px solid var(--border)',
                     }}>
                       <span style={{ display: 'block', width: '100%', height: '100%', background: c }} />
                     </div>

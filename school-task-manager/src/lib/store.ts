@@ -5,10 +5,29 @@ import type { Subject, Task, TimetableSlot, Period, Memo, AppData, AppEvent, Lin
 import { generateId } from './utils'
 import type { Lang } from './i18n'
 
+export type ThemeColor = 'emerald' | 'sky' | 'purple' | 'amber' | 'indigo' | 'teal' | 'orange' | 'mono' | 'white'
+export type ThemeMode = 'dark' | 'light'
+
+export const THEME_COLORS: Record<ThemeColor, { label: string; primary: string; primaryLight: string; secondary: string; secondaryLight: string; category: string }> = {
+  emerald: { label: 'エメラルド',   primary: '#10b981', primaryLight: '#34d399', secondary: '#0ea5e9', secondaryLight: '#38bdf8', category: '単色' },
+  sky:     { label: 'スカイブルー', primary: '#0ea5e9', primaryLight: '#38bdf8', secondary: '#8b5cf6', secondaryLight: '#a78bfa', category: '単色' },
+  purple:  { label: 'パープル',     primary: '#8b5cf6', primaryLight: '#a78bfa', secondary: '#ec4899', secondaryLight: '#f472b6', category: '単色' },
+  amber:   { label: 'アンバー',     primary: '#f59e0b', primaryLight: '#fbbf24', secondary: '#10b981', secondaryLight: '#34d399', category: '単色' },
+  indigo:  { label: 'インディゴ',   primary: '#6366f1', primaryLight: '#818cf8', secondary: '#06b6d4', secondaryLight: '#22d3ee', category: '単色' },
+  teal:    { label: 'ティール',     primary: '#14b8a6', primaryLight: '#2dd4bf', secondary: '#0ea5e9', secondaryLight: '#38bdf8', category: '単色' },
+  orange:  { label: 'オレンジ',     primary: '#f97316', primaryLight: '#fb923c', secondary: '#f59e0b', secondaryLight: '#fbbf24', category: '単色' },
+  mono:    { label: 'モノトーン',   primary: '#6b7280', primaryLight: '#9ca3af', secondary: '#9ca3af', secondaryLight: '#d1d5db', category: 'モノ・ホワイト' },
+  white:   { label: 'ホワイト',     primary: '#64748b', primaryLight: '#e2e8f0', secondary: '#475569', secondaryLight: '#f1f5f9', category: 'モノ・ホワイト' },
+}
+
 export interface IntegrationSettings {
   slackWebhookUrl: string
-  slackNotifyDaysBefore: number   // 何日前に通知するか
-  notificationsEnabled: boolean   // ブラウザ通知
+  slackNotifyDaysBefore: number
+  notificationsEnabled: boolean
+  dashAlertEnabled: boolean
+  dashAlertDays: number
+  themeColor: ThemeColor
+  themeMode: ThemeMode
 }
 
 interface AppStore extends AppData {
@@ -103,6 +122,10 @@ const defaultIntegrations: IntegrationSettings = {
   slackWebhookUrl: '',
   slackNotifyDaysBefore: 1,
   notificationsEnabled: true,
+  dashAlertEnabled: true,
+  dashAlertDays: 7,
+  themeColor: 'emerald',
+  themeMode: 'dark',
 }
 
 const now = () => new Date().toISOString()
@@ -129,7 +152,7 @@ export const useStore = create<AppStore>()(
       bgPositionMobile: 'center',
       headerBanner: '',
       headerBannerY: 50,
-      headerBannerHeight: 160,
+      headerBannerHeight: 260,
       headerBannerZoom: 1,
       setLanguage: (lang) => set({ language: lang }),
       setSidebarIcon: (url) => set({ sidebarIcon: url }),

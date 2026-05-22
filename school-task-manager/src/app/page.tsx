@@ -1,423 +1,277 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '@/lib/store'
-import { formatDueDate, getDueDateColor, PRIORITY_LABELS, PRIORITY_COLORS, TYPE_LABELS, EVENT_TYPE_LABELS } from '@/lib/utils'
-import {
-  CheckCircle2, Clock, AlertTriangle, BookOpen, TrendingUp,
-  CalendarDays, Plus, ChevronDown, ChevronUp, CalendarCheck
-} from 'lucide-react'
-import Link from 'next/link'
+import { EVENT_TYPE_LABELS } from '@/lib/utils'
+import { CheckCircle2, Circle, AlertTriangle } from 'lucide-react'
 import GradientText from '@/components/GradientText'
 
+function DonutChart({ value, size = 188, strokeWidth = 18 }: { value: number; size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const [offset, setOffset] = useState(circumference)
+  useEffect(() => {
+    const t = setTimeout(() => setOffset(circumference * (1 - value / 100)), 120)
+    return () => clearTimeout(t)
+  }, [value, circumference])
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+      <defs>
+        <linearGradient id="donut-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="var(--emerald)" />
+          <stop offset="100%" stopColor="var(--emerald-light)" />
+        </linearGradient>
+      </defs>
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--progress-track)" strokeWidth={strokeWidth} />
+      <circle
+        cx={size / 2} cy={size / 2} r={radius}
+        fill="none" stroke="url(#donut-grad)"
+        strokeWidth={strokeWidth} strokeLinecap="round"
+        strokeDasharray={circumference} strokeDashoffset={offset}
+        style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)' }}
+      />
+    </svg>
+  )
+}
+
+function SectionLabel({ children, color = 'var(--emerald)' }: { children: React.ReactNode; color?: string }) {
+  return (
+    <p style={{
+      margin: '0 0 16px',
+      fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
+      textTransform: 'uppercase', color,
+    }}>
+      {children}
+    </p>
+  )
+}
+
 export default function Dashboard() {
-  const { tasks, subjects, events } = useStore()
-  const [guideOpen, setGuideOpen] = useState(false)
-  const [guideTab, setGuideTab] = useState<'start' | 'features' | 'faq'>('start')
-  const [openItems, setOpenItems] = useState<Set<string>>(new Set())
-  const toggleItem = (id: string) => setOpenItems(prev => {
-    const next = new Set(prev)
-    next.has(id) ? next.delete(id) : next.add(id)
-    return next
-  })
+  const { tasks, events, subjects, updateTask, integrations } = useStore()
 
   const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
-  const weekEnd = new Date(today)
-  weekEnd.setDate(today.getDate() + 7)
+  const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7)
   const weekEndStr = weekEnd.toISOString().split('T')[0]
+  const DOW = ['日', '月', '火', '水', '木', '金', '土']
 
-  const pending = tasks.filter(t => t.status !== 'completed')
-  const completed = tasks.filter(t => t.status === 'completed')
-  const overdue = tasks.filter(t => t.status !== 'completed' && !!t.dueDate && t.dueDate < todayStr)
-  const todayTasks = tasks.filter(t => t.dueDate === todayStr && t.status !== 'completed')
-  const weekTasks = tasks.filter(t => t.status !== 'completed' && !!t.dueDate && t.dueDate >= todayStr && t.dueDate <= weekEndStr)
+  const completedTasks = tasks.filter(t => t.status === 'completed')
+  const completionRate = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 0
 
-  const completionRate = tasks.length > 0 ? Math.round((completed.length / tasks.length) * 100) : 0
+  const todayTasks = tasks
+    .filter(t => t.dueDate === todayStr)
+    .sort((a, b) => {
+      if (a.status === 'completed' && b.status !== 'completed') return 1
+      if (a.status !== 'completed' && b.status === 'completed') return -1
+      return 0
+    })
+
+  const weekTasks = tasks
+    .filter(t => t.status !== 'completed' && !!t.dueDate && t.dueDate > todayStr && t.dueDate <= weekEndStr)
+    .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
+
+  const todayEvents = events
+    .filter(e => e.date === todayStr)
+    .sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''))
 
   const getSubjectName = (id?: string) => subjects.find(s => s.id === id)?.name ?? '未設定'
-  const getSubjectColor = (id?: string) => subjects.find(s => s.id === id)?.color ?? '#8a92a6'
+  const getSubjectColor = (id?: string) => subjects.find(s => s.id === id)?.color ?? 'var(--text-ghost)'
 
-  const urgentTasks = pending
-    .sort((a, b) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'))
-    .slice(0, 6)
+  // アラート：期限が近い課題・イベント
+  const dashAlertEnabled = integrations.dashAlertEnabled ?? true
+  const dashAlertDays = integrations.dashAlertDays ?? 7
+  const alertEndDate = new Date(today)
+  alertEndDate.setDate(today.getDate() + dashAlertDays)
+  const alertEndStr = alertEndDate.toISOString().split('T')[0]
+  const upcomingAlerts = dashAlertEnabled ? [
+    ...tasks
+      .filter(t => t.status !== 'completed' && !!t.dueDate && t.dueDate >= todayStr && t.dueDate <= alertEndStr)
+      .map(t => ({
+        id: t.id,
+        title: t.title,
+        deadline: t.dueDate!,
+        color: getSubjectColor(t.subjectId),
+        label: getSubjectName(t.subjectId),
+        daysLeft: Math.round((new Date(t.dueDate! + 'T00:00:00').getTime() - new Date(todayStr + 'T00:00:00').getTime()) / 86400000),
+      })),
+    ...events
+      .filter(e => e.date >= todayStr && e.date <= alertEndStr)
+      .map(e => ({
+        id: 'ev-' + e.id,
+        title: e.title,
+        deadline: e.date,
+        color: e.color,
+        label: EVENT_TYPE_LABELS[e.type] ?? e.type,
+        daysLeft: Math.round((new Date(e.date + 'T00:00:00').getTime() - new Date(todayStr + 'T00:00:00').getTime()) / 86400000),
+      })),
+  ].sort((a, b) => a.daysLeft - b.daysLeft) : []
 
-  const upcomingEvents = events
-    .filter(e => e.date >= todayStr && e.date <= weekEndStr)
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 5)
+  // 科目別：残りレポート・出席（科目ごとに1行）
+  const subjectRemaining = dashAlertEnabled ? subjects.flatMap(sub => {
+    const submitted = tasks.filter(t => t.subjectId === sub.id && t.type === 'report' && t.status === 'completed').length
+    const reportRem = (sub.totalReports && sub.totalReports > submitted) ? sub.totalReports - submitted : 0
+    const sessionRem = (sub.totalSessions && sub.totalSessions > (sub.attendedSessions ?? 0)) ? sub.totalSessions - (sub.attendedSessions ?? 0) : 0
+    if (!reportRem && !sessionRem) return []
+    return [{ id: sub.id, title: sub.name, color: sub.color, reportRem, sessionRem }]
+  }) : []
 
-  function formatEventDate(date: string) {
+  function toggleTask(id: string, status: string) {
+    updateTask(id, { status: status === 'completed' ? 'pending' : 'completed' })
+  }
+
+  function fmtDate(date?: string) {
+    if (!date) return '—'
     const d = new Date(date + 'T00:00:00')
-    return `${d.getMonth() + 1}/${d.getDate()}`
+    return `${d.getMonth() + 1}/${d.getDate()}(${DOW[d.getDay()]})`
   }
 
   return (
-    <div style={{ padding: '20px 14px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
-      {/* Header */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, marginBottom: 4 }}>
-          <GradientText>Study Task Manager</GradientText>
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
-          {today.getFullYear()}年{today.getMonth() + 1}月{today.getDate()}日（
-          {['日','月','火','水','木','金','土'][today.getDay()]}）
-        </p>
+    <div style={{ padding: '16px 20px', width: '100%' }}>
+
+      {/* ── ヘッダー ── */}
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'baseline', gap: 12 }}>
+        <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)' }}>Study Task Manager</div>
+        <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+          {today.getFullYear()}年{today.getMonth() + 1}月{today.getDate()}日（{DOW[today.getDay()]}）
+        </span>
       </div>
 
-      {/* Guide collapsible */}
-      <div className="card" style={{ marginBottom: 20, overflow: 'hidden' }}>
-        <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <button
-            onClick={() => setGuideOpen(o => !o)}
-            style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', borderRadius: 6, padding: '4px 10px', color: 'white', fontSize: 11, fontWeight: 700, flexShrink: 0, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            📖 使い方ガイド {guideOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          {([
-            { id: 'start', label: '👀 使用方法' },
-            { id: 'features', label: '📋 各機能一覧' },
-            { id: 'faq', label: '⚠️ 注意・FAQ' },
-          ] as const).map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => { setGuideOpen(true); setGuideTab(tab.id) }}
-              style={{
-                background: (guideOpen && guideTab === tab.id) ? 'rgba(16,185,129,0.15)' : 'transparent',
-                border: (guideOpen && guideTab === tab.id) ? '1px solid rgba(16,185,129,0.4)' : '1px solid var(--border)',
-                borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 600,
-                color: (guideOpen && guideTab === tab.id) ? 'var(--emerald-light)' : 'var(--text-muted)',
-                cursor: 'pointer',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* ── タスクカード（最上部）── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 16 }}>
 
-        {guideOpen && (
-          <div style={{ borderTop: '1px solid var(--border)' }}>
-
-            {/* 使用方法 */}
-            <div style={{ display: guideTab === 'start' ? 'block' : 'none', padding: '16px' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--emerald-light)', marginBottom: 12 }}>🚀 セットアップ手順</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  { step: '1', title: '科目を登録する', detail: '「課題・レポート」ページ右上の「科目追加」ボタンから、受講している科目（英語・数学など）を登録します。カラーを設定しておくとカレンダーや時間割で見分けやすくなります。', link: '/tasks', linkLabel: '課題ページへ' },
-                  { step: '2', title: '時間割を登録する', detail: '「時間割」ページでセルをタップして科目を割り当てます。教室・担当教師・取得単位数も登録できます。右上「時限設定」で各時限の開始・終了時刻を変更できます。', link: '/timetable', linkLabel: '時間割ページへ' },
-                  { step: '3', title: 'スクーリング・イベントを登録する', detail: '「イベント」ページでスクーリング日程・試験・面談などを登録します。アラームを設定すると締切前日・当日にブラウザ通知が届きます。「メモも作成する」にチェックを入れると詳細メモが自動生成されます。', link: '/events', linkLabel: 'イベントページへ' },
-                  { step: '4', title: '課題・レポートを登録する', detail: '「課題・レポート」ページで提出課題を登録します。科目・種別（課題/試験/レポート）・締切日（任意）・優先度・予想所要時間を設定できます。ステータスを「進行中 → 完了」と更新してダッシュボードの達成率を上げましょう。', link: '/tasks', linkLabel: '課題ページへ' },
-                  { step: '5', title: 'マイリンクを整理する', detail: '「マイリンク」ページに Slack・Zenstudy・N Lobby・Zoom・Adobe など日常的に使うサービスをまとめています。「リンクを追加」から自分のツールを追加でき、カテゴリで整理できます。', link: '/links', linkLabel: 'マイリンクへ' },
-                  { step: '6', title: 'Slack 通知を設定する（任意）', detail: '「設定・連携管理」ページで Slack の Incoming Webhook URL を登録すると、アラーム通知を Slack に送れます。部活・担任・メンターなど複数チャンネルを登録してメッセージを送ることもできます。', link: '/settings', linkLabel: '設定ページへ' },
-                ].map(({ step, title, detail, link, linkLabel }) => {
-                  const isOpen = openItems.has(`step-${step}`)
-                  return (
-                    <div key={step} className="card-2" style={{ overflow: 'hidden' }}>
-                      <button
-                        onClick={() => toggleItem(`step-${step}`)}
-                        style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}
-                      >
-                        <div style={{ width: 26, height: 26, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, var(--emerald), var(--sky))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: 'white' }}>{step}</div>
-                        <span style={{ flex: 1, fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{title}</span>
-                        {isOpen ? <ChevronUp size={14} color="var(--text-muted)" /> : <ChevronDown size={14} color="var(--text-muted)" />}
-                      </button>
-                      {isOpen && (
-                        <div style={{ padding: '0 14px 14px 52px', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-                          {detail}
-                          <div style={{ marginTop: 8 }}>
-                            <Link href={link}><button className="btn-ghost" style={{ fontSize: 12, padding: '4px 10px' }}>{linkLabel} →</button></Link>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* 各機能一覧 */}
-            <div style={{ display: guideTab === 'features' ? 'block' : 'none', padding: '16px' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sky-light)', marginBottom: 12 }}>📋 各ページの機能一覧</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  { icon: '🏠', title: 'ダッシュボード（このページ）', items: ['統計カード：未完了・期限超過・達成率', '今日の締切：当日が締切の課題を表示', '優先タスク：締切が近い課題を一覧表示', '今週のイベント：直近の予定を確認'] },
-                  { icon: '✅', title: '課題・レポート', items: ['課題の登録・編集・削除', '今日/今週/今月/期限切れでフィルター', 'ステータス管理（未着手→進行中→完了）', '科目・優先度・種別で絞り込み検索'] },
-                  { icon: '📅', title: 'カレンダー', items: ['月表示で課題とイベントを一覧', '日付クリックで課題またはイベントを作成', '課題は科目カラーで色分け表示', 'イベントは別スタイルで区別表示'] },
-                  { icon: '📌', title: 'イベント（スクーリング等）', items: ['スクーリング・試験・面談・イベントを登録', 'アラーム設定：1時間前/前日/3日前から選択', 'メモ自動生成：作成時に紐付きメモを作成', '開催場所・説明文も記録可能'] },
-                  { icon: '🔗', title: 'マイリンク', items: ['Slack・Zenstudy・Adobe 等のショートカット', 'カテゴリ別に整理（N高/コミュニケーション等）', 'リンクは自由に追加・編集・削除できる'] },
-                  { icon: '🗒️', title: 'メモ', items: ['カラーカードでメモを管理', 'ピン留め機能で重要メモを上部に固定', 'カテゴリ設定で整理（授業ノート/パスワード等）'] },
-                  { icon: '⏰', title: '時間割', items: ['月〜金 × 7時限のグリッド形式', 'セルをタップして科目を登録', '教室・取得単位数も記録できる'] },
-                  { icon: '⚙️', title: '設定・連携管理', items: ['Slack チャンネル管理（複数登録可）', 'メンター・担任へのメッセージ直接送信', 'JSONエクスポート/インポート（バックアップ）'] },
-                ].map(({ icon, title, items }) => {
-                  const isOpen = openItems.has(`feat-${title}`)
-                  return (
-                    <div key={title} className="card-2" style={{ overflow: 'hidden' }}>
-                      <button
-                        onClick={() => toggleItem(`feat-${title}`)}
-                        style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}
-                      >
-                        <span style={{ fontSize: 18 }}>{icon}</span>
-                        <span style={{ flex: 1, fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{title}</span>
-                        {isOpen ? <ChevronUp size={14} color="var(--text-muted)" /> : <ChevronDown size={14} color="var(--text-muted)" />}
-                      </button>
-                      {isOpen && (
-                        <ul style={{ margin: 0, padding: '0 14px 14px 48px', fontSize: 13, color: 'var(--text-muted)', lineHeight: 2 }}>
-                          {items.map(item => <li key={item}>{item}</li>)}
-                        </ul>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* 注意・FAQ */}
-            <div style={{ display: guideTab === 'faq' ? 'block' : 'none', padding: '16px' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#f59e0b', marginBottom: 12 }}>⚠️ 注意事項・よくある質問</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  { q: 'データはどこに保存されますか？', a: 'すべてのデータはこのブラウザのローカルストレージに保存されます。ブラウザのデータを消去するとすべて削除されます。定期的に「設定」ページからJSONをダウンロードしてGoogle Driveなどにバックアップしてください。', type: 'warn' },
-                  { q: 'スマホ（Android）でアプリとして使うには？', a: 'Chrome でこのページを開き、右上「︙」メニュー →「ホーム画面に追加」または「アプリをインストール」を選ぶと、アプリアイコンがホーム画面に追加されます。', type: 'info' },
-                  { q: 'ブラウザ通知が届かない場合は？', a: '「設定」ページの「ブラウザ通知」セクションで許可状態を確認してください。「ブロック中」の場合は Chrome の設定 →「サイトの設定」→「通知」→ このサイトを「許可」に変更してください。', type: 'info' },
-                  { q: 'Slack 通知の設定方法は？', a: '「設定」ページの「Slack チャンネル管理」でチャンネルを追加します。Slack の api.slack.com/apps でアプリを作成し、Incoming Webhooks を有効にして Webhook URL を取得します。', type: 'info' },
-                  { q: 'マイリンクのツールはどれだけ追加できますか？', a: '制限なく追加できます。ローカルストレージが許す限り（通常5〜10MB）追加可能です。カテゴリで整理すると使いやすくなります。', type: 'ok' },
-                  { q: 'N高のテスト・課題をここで管理すべきですか？', a: 'テストや提出はN高の公式アプリ（Zenstudy等）で行います。このアプリはあくまで「締切・スケジュールの管理」と「見落とし防止」が目的です。', type: 'ok' },
-                ].map(({ q, a, type }) => {
-                  const isOpen = openItems.has(`faq-${q}`)
-                  const color = type === 'warn' ? '#f59e0b' : type === 'ok' ? 'var(--emerald)' : 'var(--sky)'
-                  return (
-                    <div key={q} className="card-2" style={{ overflow: 'hidden', borderLeft: `3px solid ${color}` }}>
-                      <button
-                        onClick={() => toggleItem(`faq-${q}`)}
-                        style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}
-                      >
-                        <span style={{ flex: 1, fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>Q. {q}</span>
-                        {isOpen ? <ChevronUp size={14} color="var(--text-muted)" /> : <ChevronDown size={14} color="var(--text-muted)" />}
-                      </button>
-                      {isOpen && (
-                        <div style={{ padding: '0 14px 14px', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-                          A. {a}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-          </div>
-        )}
-      </div>
-
-      {/* Stats */}
-      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
-        <div className="stat-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>未完了</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--text)', lineHeight: 1.2, marginTop: 4 }}>{pending.length}</div>
-            </div>
-            <div style={{ padding: 8, borderRadius: 8, background: 'rgba(14,165,233,0.1)' }}>
-              <Clock size={20} color="var(--sky)" />
-            </div>
-          </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>課題 / タスク</div>
-        </div>
-
-        <div className="stat-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>期限超過</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: overdue.length > 0 ? '#ef4444' : 'var(--text)', lineHeight: 1.2, marginTop: 4 }}>{overdue.length}</div>
-            </div>
-            <div style={{ padding: 8, borderRadius: 8, background: 'rgba(239,68,68,0.1)' }}>
-              <AlertTriangle size={20} color={overdue.length > 0 ? '#ef4444' : 'var(--text-muted)'} />
-            </div>
-          </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>要対応タスク</div>
-        </div>
-
-        <div className="stat-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>完了済み</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--emerald-light)', lineHeight: 1.2, marginTop: 4 }}>{completed.length}</div>
-            </div>
-            <div style={{ padding: 8, borderRadius: 8, background: 'rgba(16,185,129,0.1)' }}>
-              <CheckCircle2 size={20} color="var(--emerald)" />
-            </div>
-          </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>合計 {tasks.length} 件</div>
-        </div>
-
-        <div className="stat-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>達成率</div>
-              <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.2, marginTop: 4 }}><GradientText>{completionRate}%</GradientText></div>
-            </div>
-            <div style={{ padding: 8, borderRadius: 8, background: 'rgba(16,185,129,0.1)' }}>
-              <TrendingUp size={20} color="var(--emerald)" />
-            </div>
-          </div>
-          <div className="progress-bar" style={{ marginTop: 12 }}>
-            <div className="progress-bar-fill" style={{ width: `${completionRate}%` }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Upcoming events */}
-      {upcomingEvents.length > 0 && (
-        <div className="card" style={{ padding: 16, marginBottom: 20, borderColor: 'rgba(14,165,233,0.25)' }}>
-          <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CalendarCheck size={15} color="var(--sky)" />
-            今後7日のイベント
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {upcomingEvents.map(ev => (
-              <div key={ev.id} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '8px 12px', borderRadius: 8,
-                background: 'var(--surface-2)',
-                borderLeft: `3px solid ${ev.color}`,
-              }}>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 36 }}>{formatEventDate(ev.date)}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, flex: 1 }}>{ev.title}</span>
-                <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 9999, backgroundColor: ev.color + '25', color: ev.color, forcedColorAdjust: 'none' } as React.CSSProperties}>
-                  {EVENT_TYPE_LABELS[ev.type]}
-                </span>
-              </div>
-            ))}
-          </div>
-          <Link href="/events" style={{ display: 'block', textAlign: 'right', marginTop: 10 }}>
-            <button className="btn-ghost" style={{ fontSize: 12 }}>すべて表示 →</button>
-          </Link>
-        </div>
-      )}
-
-      <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20 }}>
-        {/* Urgent Tasks */}
-        <div className="card" style={{ padding: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <AlertTriangle size={16} color="var(--sky)" />
-              優先タスク（締切順）
-            </h2>
-            <Link href="/tasks">
-              <button className="btn-ghost" style={{ fontSize: 12 }}>すべて表示 →</button>
-            </Link>
-          </div>
-
-          {urgentTasks.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-              <CheckCircle2 size={32} style={{ margin: '0 auto 8px', display: 'block', color: 'var(--emerald)' }} />
-              <div>未完了のタスクはありません！</div>
-              <Link href="/tasks">
-                <button className="btn-primary" style={{ marginTop: 12 }}>
-                  <Plus size={14} /> タスクを追加
-                </button>
-              </Link>
-            </div>
+        {/* 今日の締切 */}
+        <div className="card" style={{ padding: '12px 14px' }}>
+          <SectionLabel color="var(--emerald)">今日の締切</SectionLabel>
+          {todayTasks.length === 0 ? (
+            <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>締切のタスクはありません</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {urgentTasks.map(task => (
-                <div key={task.id} className="card-2" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{
-                    width: 4, height: 36, borderRadius: 2, flexShrink: 0,
-                    backgroundColor: getSubjectColor(task.subjectId), forcedColorAdjust: 'none',
-                  } as React.CSSProperties} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {task.title}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {todayTasks.map(task => {
+                const done = task.status === 'completed'
+                return (
+                  <button key={task.id} onClick={() => toggleTask(task.id, task.status)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '7px 0', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}>
+                    <div style={{ color: done ? 'var(--emerald)' : 'var(--text-check-off)', flexShrink: 0 }}>
+                      {done ? <CheckCircle2 size={16} /> : <Circle size={16} />}
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                      {getSubjectName(task.subjectId)} · {TYPE_LABELS[task.type]}
+                    <div style={{ width: 3, height: 28, borderRadius: 2, backgroundColor: getSubjectColor(task.subjectId), opacity: done ? 0.4 : 1, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0, opacity: done ? 0.45 : 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)', textDecoration: done ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>{getSubjectName(task.subjectId)}</div>
                     </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                    <span className={getDueDateColor(task.dueDate)} style={{ fontSize: 12 }}>
-                      {formatDueDate(task.dueDate)}
-                    </span>
-                    <span className={`badge ${PRIORITY_COLORS[task.priority]}`} style={{ fontSize: 10 }}>
-                      {PRIORITY_LABELS[task.priority]}
-                    </span>
-                  </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 今週の課題 */}
+        <div className="card" style={{ padding: '12px 14px' }}>
+          <SectionLabel color="var(--sky)">今週の課題</SectionLabel>
+          {weekTasks.length === 0 ? (
+            <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>今週の課題はありません</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {weekTasks.slice(0, 8).map(task => (
+                <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0', borderBottom: '1px solid var(--divider)' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-faint)', minWidth: 60, flexShrink: 0 }}>{fmtDate(task.dueDate)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-medium)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-faint)', flexShrink: 0 }}>{getSubjectName(task.subjectId)}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right panel */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Today */}
-          <div className="card" style={{ padding: 16 }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CalendarDays size={15} color="var(--emerald)" />
-              今日の締切
-              <span style={{ background: 'var(--emerald)', color: 'white', borderRadius: 9999, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>
-                {todayTasks.length}
-              </span>
-            </h3>
-            {todayTasks.length === 0 ? (
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>今日の締切なし ✓</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {todayTasks.map(t => (
-                  <div key={t.id} style={{ fontSize: 13, padding: '8px 10px', background: 'rgba(239,68,68,0.08)', borderRadius: 6, borderLeft: '3px solid #ef4444' }}>
-                    <div style={{ fontWeight: 600 }}>{t.title}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{getSubjectName(t.subjectId)}</div>
+        {/* 今日のイベント */}
+        <div className="card" style={{ padding: '12px 14px' }}>
+          <SectionLabel color="var(--sky)">今日のイベント</SectionLabel>
+          {todayEvents.length === 0 ? (
+            <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>今日の予定はありません</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {todayEvents.map(ev => (
+                <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--divider)' }}>
+                  <div style={{ minWidth: 44, flexShrink: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: ev.color }}>{ev.startTime ?? '終日'}</div>
+                    {ev.endTime && <div style={{ fontSize: 10, color: 'var(--text-faint)' }}>〜{ev.endTime}</div>}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* This week */}
-          <div className="card" style={{ padding: 16 }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <BookOpen size={15} color="var(--sky)" />
-              今週の課題
-              <span style={{ background: 'var(--sky)', color: 'white', borderRadius: 9999, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>
-                {weekTasks.length}
-              </span>
-            </h3>
-            {weekTasks.length === 0 ? (
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>今週の課題なし ✓</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                {weekTasks.slice(0, 5).map(t => (
-                  <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
-                    <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>{t.title}</span>
-                    <span className={getDueDateColor(t.dueDate)} style={{ fontSize: 11, flexShrink: 0 }}>{formatDueDate(t.dueDate)}</span>
+                  <div style={{ width: 3, alignSelf: 'stretch', minHeight: 24, borderRadius: 2, backgroundColor: ev.color, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
+                    {ev.location && <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>📍 {ev.location}</div>}
                   </div>
-                ))}
-                {weekTasks.length > 5 && (
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', paddingTop: 4 }}>他 {weekTasks.length - 5} 件...</div>
-                )}
-              </div>
-            )}
-          </div>
+                  <span style={{ fontSize: 10, color: ev.color, flexShrink: 0 }}>{EVENT_TYPE_LABELS[ev.type]}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-          {/* Subjects */}
-          <div className="card" style={{ padding: 16 }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700 }}>科目別未完了数</h3>
-            {subjects.length === 0 ? (
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>科目未登録</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {subjects.map(s => {
-                  const count = pending.filter(t => t.subjectId === s.id).length
+      </div>
+
+      {/* ── メイングリッド ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
+
+        {/* ── 左カラム：ドーナツ ── */}
+        <div className="card" style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'relative' }}>
+            <DonutChart value={completionRate} size={180} strokeWidth={16} />
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+              <div style={{ fontSize: 38, fontWeight: 900, lineHeight: 1 }}><GradientText>{completionRate}%</GradientText></div>
+              <span style={{ fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>達成率</span>
+            </div>
+          </div>
+          <div style={{ marginTop: 14, display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-dim)' }}>
+            <span>完了 <span style={{ color: 'var(--emerald-light)', fontWeight: 700 }}>{completedTasks.length}</span> 件</span>
+            <span style={{ opacity: 0.3 }}>|</span>
+            <span>未完了 <span style={{ color: 'var(--text-strong)', fontWeight: 700 }}>{tasks.length - completedTasks.length}</span> 件</span>
+          </div>
+          {tasks.length === 0 && (
+            <p style={{ marginTop: 10, fontSize: 12, color: 'var(--text-ghost)', textAlign: 'center' }}>タスクがまだ登録されていません</p>
+          )}
+        </div>
+
+        {/* ── 右カラム：要確認 ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+          {/* 要確認 */}
+          {(upcomingAlerts.length > 0 || subjectRemaining.length > 0) && (
+            <div className="card" style={{ padding: '12px 14px', borderTop: '2px solid #f97316' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <AlertTriangle size={13} color="#f97316" />
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#f97316' }}>要確認</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {upcomingAlerts.map(item => {
+                  const urgent = item.daysLeft <= 1
+                  const soon = item.daysLeft <= 3
+                  const badgeColor = urgent ? '#ef4444' : soon ? '#f97316' : '#eab308'
+                  const dayLabel = item.daysLeft === 0 ? '今日' : item.daysLeft === 1 ? '明日' : `あと${item.daysLeft}日`
                   return (
-                    <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: s.color, flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
-                      <span style={{ fontSize: 13, flex: 1 }}>{s.name}</span>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{count}件</span>
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--divider)' }}>
+                      <div style={{ width: 3, height: 28, borderRadius: 2, backgroundColor: item.color, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-faint)' }}>{item.label}</div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 9999, background: badgeColor + '20', color: badgeColor, border: `1px solid ${badgeColor}40`, flexShrink: 0 }}>{dayLabel}</span>
                     </div>
                   )
                 })}
+                {subjectRemaining.map(item => (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0', borderBottom: '1px solid var(--divider)' }}>
+                    <div style={{ width: 3, height: 22, borderRadius: 2, backgroundColor: item.color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text-strong)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      {item.reportRem > 0 && <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 9999, background: '#0ea5e918', color: '#0ea5e9', border: '1px solid #0ea5e940' }}>レポあと{item.reportRem}本</span>}
+                      {item.sessionRem > 0 && <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 9999, background: '#8b5cf618', color: '#a78bfa', border: '1px solid #8b5cf640' }}>出席あと{item.sessionRem}回</span>}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

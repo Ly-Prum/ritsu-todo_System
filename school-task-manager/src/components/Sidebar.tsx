@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, CheckSquare, Calendar, Clock,
+  LayoutDashboard, CheckSquare, Calendar, BarChart3,
   StickyNote, Settings, GraduationCap, CalendarCheck, Link2
 } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -19,10 +19,10 @@ export default function Sidebar() {
   const links = [
     { href: '/', icon: LayoutDashboard, label: t('nav_dashboard') },
     { href: '/tasks', icon: CheckSquare, label: t('nav_tasks') },
+    { href: '/progress', icon: BarChart3, label: t('nav_progress') },
     { href: '/calendar', icon: Calendar, label: t('nav_calendar') },
     { href: '/events', icon: CalendarCheck, label: t('nav_events') },
     { href: '/links', icon: Link2, label: t('nav_links') },
-    { href: '/timetable', icon: Clock, label: t('nav_timetable') },
     { href: '/memos', icon: StickyNote, label: t('nav_memos') },
     { href: '/settings', icon: Settings, label: t('nav_settings') },
   ]
@@ -32,17 +32,15 @@ export default function Sidebar() {
   return (
     <aside style={{
       width: 220, minWidth: 220,
-      background: 'rgba(15,15,20,0.8)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      borderRight: '1px solid var(--border)',
+      background: 'var(--sidebar-bg)',
+      borderRight: '1px solid var(--sidebar-border)',
       display: 'flex', flexDirection: 'column',
       padding: '20px 12px', gap: 4,
       height: '100vh', position: 'sticky', top: 0,
     }}>
       <div style={{ padding: '12px 12px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
         <div style={{
-          width: 64, height: 64, borderRadius: 14,
+          width: 80, height: 80, borderRadius: 16,
           background: 'linear-gradient(135deg, var(--emerald), var(--sky))',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           overflow: 'hidden',
