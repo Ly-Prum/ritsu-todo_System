@@ -1,3 +1,6 @@
 {
-  "rootDirectory": "school-task-manager"
+  "buildCommand": "cd school-task-manager && npm run build",
+  "installCommand": "cd school-task-manager && npm install",
+  "outputDirectory": "school-task-manager/.next",
+  "framework": "nextjs"
 }
