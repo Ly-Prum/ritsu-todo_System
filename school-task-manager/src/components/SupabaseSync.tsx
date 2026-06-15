@@ -21,8 +21,11 @@ export default function SupabaseSync() {
         .eq('id', SYNC_KEY)
         .single()
 
-      if (row?.data) {
-        const d = row.data
+      const hasRealData = row?.data &&
+        ((row.data.tasks?.length ?? 0) > 0 || (row.data.subjects?.length ?? 0) > 0)
+
+      if (hasRealData) {
+        const d = row!.data
         const s = useStore.getState()
         if (d.subjects !== undefined || d.tasks !== undefined) s.importData(d)
         if (d.sidebarIcon !== undefined) s.setSidebarIcon(d.sidebarIcon)
@@ -34,7 +37,7 @@ export default function SupabaseSync() {
         if (d.freeNote !== undefined) s.updateFreeNote(d.freeNote)
         if (d.integrations) s.updateIntegrations(d.integrations)
       } else {
-        // Supabaseが空 → PCのlocalStorageデータをSupabaseに書き込む
+        // Supabaseにデータなし → PCのlocalStorageデータをSupabaseに書き込む
         const s = useStore.getState()
         const data = {
           ...s.exportData(),
