@@ -118,15 +118,15 @@ body {
   background: rgba(240, 241, 247, 0.80);
 }
 
-/* Cards — solid when no background image, transparent when has-bg */
+/* Cards — solid base, transparent only when has-bg (PC with background image) */
 .card {
-  background: rgba(40, 40, 40, 0.92);
+  background: #282828;
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: var(--card-shadow);
 }
 [data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
 }
 .has-bg .card {
   background: rgba(36, 36, 36, 0.58);
@@ -135,12 +135,12 @@ body {
   background: rgba(255, 255, 255, 0.62);
 }
 .card-2 {
-  background: rgba(48, 48, 48, 0.92);
+  background: #303030;
   border: 1px solid var(--card-border-2);
   border-radius: 10px;
 }
 [data-theme="light"] .card-2 {
-  background: rgba(248, 249, 252, 0.95);
+  background: #f8f9fc;
 }
 .has-bg .card-2 {
   background: rgba(44, 44, 44, 0.58);

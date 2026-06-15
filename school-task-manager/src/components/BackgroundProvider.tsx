@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useStore } from '@/lib/store'
 
@@ -8,25 +8,27 @@ const SIDEBAR_W = 220
 export default function BackgroundProvider() {
   const { bgImage, bgImageMobile, bgX, bgY, bgZoom } = useStore()
   const [isMobile, setIsMobile] = useState(false)
-  const [isMobileUA, setIsMobileUA] = useState(false)
   const pathname = usePathname()
 
+  // layout.tsx の beforeInteractive Script が付与したクラスを初回レンダー時に同期読み込み
+  // useState ではなく useRef で初期化することで hydration タイミング問題を回避
+  const isMobileUA = useRef(
+    typeof window !== 'undefined'
+      ? document.documentElement.classList.contains('is-mobile-ua')
+      : false
+  )
+
   useEffect(() => {
-    // layout.tsx の beforeInteractive Script で付与されるクラスを読む（フラッシュなし）
-    setIsMobileUA(document.documentElement.classList.contains('is-mobile-ua'))
+    document.documentElement.style.backgroundImage = ''
+    document.documentElement.style.backgroundAttachment = ''
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  useEffect(() => {
-    document.documentElement.style.backgroundImage = ''
-    document.documentElement.style.backgroundAttachment = ''
-  }, [])
-
-  // モバイルUA では背景画像を表示しない
-  const image = isMobileUA ? null : ((isMobile && bgImageMobile) ? bgImageMobile : bgImage)
+  // モバイルUA では常に null（背景画像を一切描画しない）
+  const image = isMobileUA.current ? null : ((isMobile && bgImageMobile) ? bgImageMobile : bgImage)
 
   useEffect(() => {
     if (image && pathname !== '/') {
