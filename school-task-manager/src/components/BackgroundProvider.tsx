@@ -12,7 +12,8 @@ export default function BackgroundProvider() {
   const pathname = usePathname()
 
   useEffect(() => {
-    setIsMobileUA(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))
+    // layout.tsx の beforeInteractive Script で付与されるクラスを読む（フラッシュなし）
+    setIsMobileUA(document.documentElement.classList.contains('is-mobile-ua'))
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)

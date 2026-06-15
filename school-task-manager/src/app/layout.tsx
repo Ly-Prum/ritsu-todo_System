@@ -45,8 +45,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        {/* Anti-flash: apply saved theme before React hydrates */}
-        <Script id="theme-init" strategy="beforeInteractive">{`(function(){try{var s=JSON.parse(localStorage.getItem('school-task-manager')||'{}');var m=s&&s.state&&s.state.integrations&&s.state.integrations.themeMode;document.documentElement.setAttribute('data-theme',m==='light'?'light':'dark');}catch(e){}})();`}</Script>
+        {/* Anti-flash: apply saved theme + mobile-UA class before React hydrates */}
+        <Script id="theme-init" strategy="beforeInteractive">{`(function(){try{var s=JSON.parse(localStorage.getItem('school-task-manager')||'{}');var m=s&&s.state&&s.state.integrations&&s.state.integrations.themeMode;document.documentElement.setAttribute('data-theme',m==='light'?'light':'dark');if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){document.documentElement.classList.add('is-mobile-ua');document.documentElement.classList.remove('has-bg');}}catch(e){}})();`}</Script>
         {/* Injected raw — bypasses Tailwind/Lightning CSS transform */}
         <meta name="color-scheme" content="dark" />
         <style dangerouslySetInnerHTML={{ __html: `
