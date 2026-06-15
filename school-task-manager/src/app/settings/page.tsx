@@ -5,11 +5,12 @@ import type { AppData } from '@/lib/types'
 import {
   Download, Upload, Trash2, BookOpen, CheckSquare, Clock, StickyNote,
   AlertTriangle, Pencil, X, Bell,
-  HardDrive, ChevronDown, ChevronRight, CheckCircle2
+  HardDrive, ChevronDown, ChevronRight, CheckCircle2, Cloud
 } from 'lucide-react'
 import { SUBJECT_COLORS } from '@/lib/utils'
 import { useT } from '@/hooks/useT'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { supabase } from '@/lib/supabase'
 
 
 type SendState = 'idle' | 'loading' | 'ok' | 'error'
@@ -24,6 +25,8 @@ export default function SettingsPage() {
   const bgRef = useRef<HTMLInputElement>(null)
   const bgMobileRef = useRef<HTMLInputElement>(null)
   const [importMsg, setImportMsg] = useState('')
+  const [supabaseMsg, setSupabaseMsg] = useState('')
+  const [supabaseSyncing, setSupabaseSyncing] = useState(false)
   const [showSubjectManager, setShowSubjectManager] = useState(false)
   const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string } | null>(null)
 
@@ -108,6 +111,35 @@ export default function SettingsPage() {
     }
     reader.readAsText(file)
     e.target.value = ''
+  }
+
+  async function handleSupabaseSync() {
+    if (!supabase) { setSupabaseMsg('Supabase未接続'); return }
+    setSupabaseSyncing(true)
+    setSupabaseMsg('')
+    try {
+      const s = store
+      const data = {
+        ...s.exportData(),
+        sidebarIcon: s.sidebarIcon,
+        bgImage: s.bgImage,
+        bgImageMobile: s.bgImageMobile,
+        bgPosition: s.bgPosition,
+        bgPositionMobile: s.bgPositionMobile,
+        language: s.language,
+        freeNote: s.freeNote,
+        integrations: s.integrations,
+      }
+      const { error } = await supabase
+        .from('app_state')
+        .upsert({ id: 'ritsuki', data, updated_at: new Date().toISOString() })
+      if (error) throw error
+      setSupabaseMsg(`同期完了：課題 ${s.tasks.length} 件、科目 ${s.subjects.length} 件`)
+    } catch {
+      setSupabaseMsg('同期に失敗しました。しばらくしてから再試行してください。')
+    } finally {
+      setSupabaseSyncing(false)
+    }
   }
 
   async function requestNotifPermission() {
@@ -406,6 +438,24 @@ export default function SettingsPage() {
           <HardDrive size={18} color="#4285F4" />
           バックアップ・データ管理
         </h2>
+        {supabase && (
+          <div style={{ marginBottom: 12 }}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={handleSupabaseSync}
+              disabled={supabaseSyncing}
+              style={{ background: 'linear-gradient(135deg, #6366f1, #0ea5e9)' }}
+            >
+              <Cloud size={14} /> {supabaseSyncing ? '同期中...' : 'このデバイスのデータをクラウドに保存'}
+            </button>
+            {supabaseMsg && (
+              <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 6, background: supabaseMsg.includes('完了') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${supabaseMsg.includes('完了') ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, fontSize: 13, color: supabaseMsg.includes('完了') ? 'var(--emerald-light)' : '#ef4444' }}>
+                {supabaseMsg}
+              </div>
+            )}
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '12px 0' }}>
           <button className="btn-primary" onClick={handleExport}><Download size={14} /> JSONをダウンロード</button>
           <button className="btn-secondary" onClick={() => fileRef.current?.click()}><Upload size={14} /> JSONをインポート</button>
