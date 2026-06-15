@@ -27,6 +27,9 @@ export default function SettingsPage() {
   const [importMsg, setImportMsg] = useState('')
   const [supabaseMsg, setSupabaseMsg] = useState('')
   const [supabaseSyncing, setSupabaseSyncing] = useState(false)
+  const [copyMsg, setCopyMsg] = useState('')
+  const [pasteText, setPasteText] = useState('')
+  const [showPaste, setShowPaste] = useState(false)
   const [showSubjectManager, setShowSubjectManager] = useState(false)
   const [editSubject, setEditSubject] = useState<{ id: string; name: string; color: string } | null>(null)
 
@@ -80,6 +83,34 @@ export default function SettingsPage() {
     e.target.value = ''
   }
 
+
+  async function handleCopyJson() {
+    const data = store.exportData()
+    const text = JSON.stringify(data)
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyMsg('コピーしました！LINEやメールに貼り付けてスマホに送ってください')
+    } catch {
+      setCopyMsg('コピー失敗。ダウンロードボタンをお試しください')
+    }
+  }
+
+  function handlePasteImport() {
+    if (!pasteText.trim()) return
+    try {
+      const data = JSON.parse(pasteText) as AppData
+      if (!Array.isArray(data.tasks) || !Array.isArray(data.subjects)) {
+        setImportMsg('データの形式が正しくありません')
+        return
+      }
+      store.importData(data)
+      setImportMsg(`インポート完了：課題 ${data.tasks.length} 件、科目 ${data.subjects?.length ?? 0} 件`)
+      setPasteText('')
+      setShowPaste(false)
+    } catch {
+      setImportMsg('テキストの読み込みに失敗しました')
+    }
+  }
 
   function handleExport() {
     const data = store.exportData()
@@ -463,10 +494,32 @@ export default function SettingsPage() {
           </div>
         )}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '12px 0' }}>
-          <button className="btn-primary" onClick={handleExport}><Download size={14} /> JSONをダウンロード</button>
-          <button className="btn-secondary" onClick={() => fileRef.current?.click()}><Upload size={14} /> JSONをインポート</button>
+          <button type="button" className="btn-primary" onClick={handleCopyJson}><Upload size={14} /> データをコピー（PC→スマホ転送用）</button>
+          <button type="button" className="btn-secondary" onClick={handleExport}><Download size={14} /> JSONをダウンロード</button>
+          <button type="button" className="btn-secondary" onClick={() => fileRef.current?.click()}><Upload size={14} /> JSONをインポート</button>
+          <button type="button" className="btn-secondary" onClick={() => setShowPaste(p => !p)}><Upload size={14} /> テキストから貼り付けてインポート</button>
           <input ref={fileRef} type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
         </div>
+        {copyMsg && (
+          <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 13, color: 'var(--emerald-light)' }}>
+            {copyMsg}
+          </div>
+        )}
+        {showPaste && (
+          <div style={{ marginBottom: 12 }}>
+            <textarea
+              className="input"
+              rows={5}
+              placeholder="PCでコピーしたテキストをここに貼り付け（Ctrl+V または長押し）"
+              value={pasteText}
+              onChange={e => setPasteText(e.target.value)}
+              style={{ width: '100%', marginBottom: 8, fontSize: 12 }}
+            />
+            <button type="button" className="btn-primary" onClick={handlePasteImport} disabled={!pasteText.trim()}>
+              このデータをインポート
+            </button>
+          </div>
+        )}
         {importMsg && (
           <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 6, background: importMsg.includes('完了') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${importMsg.includes('完了') ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, fontSize: 13, color: importMsg.includes('完了') ? 'var(--emerald-light)' : '#ef4444' }}>
             {importMsg}
