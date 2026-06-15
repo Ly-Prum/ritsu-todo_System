@@ -136,7 +136,14 @@ export default function SettingsPage() {
       if (error) throw error
       setSupabaseMsg(`同期完了：課題 ${s.tasks.length} 件、科目 ${s.subjects.length} 件`)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
+      let msg = '不明なエラー'
+      if (err && typeof err === 'object' && 'message' in err) {
+        msg = String((err as Record<string, unknown>).message)
+      } else if (err instanceof Error) {
+        msg = err.message
+      } else {
+        msg = JSON.stringify(err)
+      }
       setSupabaseMsg(`同期失敗: ${msg}`)
     } finally {
       setSupabaseSyncing(false)
