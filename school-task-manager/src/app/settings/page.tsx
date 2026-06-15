@@ -119,13 +119,9 @@ export default function SettingsPage() {
     setSupabaseMsg('')
     try {
       const s = store
+      // 背景画像などの大きなbase64データは除外（タスク・科目・メモなど必須データのみ送信）
       const data = {
         ...s.exportData(),
-        sidebarIcon: s.sidebarIcon,
-        bgImage: s.bgImage,
-        bgImageMobile: s.bgImageMobile,
-        bgPosition: s.bgPosition,
-        bgPositionMobile: s.bgPositionMobile,
         language: s.language,
         freeNote: s.freeNote,
         integrations: s.integrations,
