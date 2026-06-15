@@ -283,56 +283,98 @@ export default function TasksPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {filtered.map(task => (
-            <div key={task.id} className="card" style={{
-              padding: '14px 16px',
-              display: 'flex', alignItems: 'center', gap: 12,
-              opacity: task.status === 'completed' ? 0.6 : 1,
-              transition: 'opacity 0.2s',
-            }}>
-              <button onClick={() => toggleStatus(task)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: task.status === 'completed' ? 'var(--emerald)' : 'var(--text-muted)', flexShrink: 0, padding: 0 }}>
-                {task.status === 'completed' ? <CheckCircle2 size={22} /> : <Circle size={22} />}
-              </button>
-
-              <div style={{ width: 4, height: 40, borderRadius: 2, backgroundColor: getSubjectColor(task.subjectId), flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, textDecoration: task.status === 'completed' ? 'line-through' : 'none' }}>
+            isMobile ? (
+              /* ── モバイル：2行レイアウト ── */
+              <div key={task.id} className="card" style={{
+                padding: '12px 14px',
+                opacity: task.status === 'completed' ? 0.6 : 1,
+                transition: 'opacity 0.2s',
+              }}>
+                {/* 1行目：チェック ｜ カラーバー ｜ タイトル ｜ 編集 ｜ 削除 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <button onClick={() => toggleStatus(task)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: task.status === 'completed' ? 'var(--emerald)' : 'var(--text-muted)', flexShrink: 0, padding: 0 }}>
+                    {task.status === 'completed' ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+                  </button>
+                  <div style={{ width: 4, height: 32, borderRadius: 2, backgroundColor: getSubjectColor(task.subjectId), flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
+                  <span style={{ fontSize: 14, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: task.status === 'completed' ? 'line-through' : 'none' }}>
                     {task.title}
                   </span>
-                  <span style={{ fontSize: 10, background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', padding: '1px 6px', borderRadius: 4 }}>
-                    {tType(task.type)}
+                  <button className="btn-ghost" onClick={() => openEdit(task)} style={{ padding: '2px 6px', flexShrink: 0 }}>
+                    <Pencil size={14} />
+                  </button>
+                  <button className="btn-ghost" onClick={() => { if (confirm(t('tasks_confirm_delete'))) deleteTask(task.id) }} style={{ padding: '2px 6px', color: '#ef4444', flexShrink: 0 }}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+                {/* 2行目：科目 ｜ 期限 ｜ 優先度 ｜ ステータス */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, paddingLeft: 34, flexWrap: 'wrap' }}>
+                  {getSubjectName(task.subjectId) && (
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>📚 {getSubjectName(task.subjectId)}</span>
+                  )}
+                  <span className={getDueDateColor(task.dueDate)} style={{ fontSize: 11 }}>
+                    {formatDueDate(task.dueDate)}
+                  </span>
+                  <span className={`badge ${PRIORITY_COLORS[task.priority]}`} style={{ fontSize: 10 }}>
+                    {tPriority(task.priority)}
+                  </span>
+                  <span className={`badge ${STATUS_COLORS[task.status]}`} style={{ fontSize: 10 }}>
+                    {tStatus(task.status)}
                   </span>
                 </div>
-                {task.description && (
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 500 }}>
-                    {task.description}
+              </div>
+            ) : (
+              /* ── PC：横並び1行レイアウト ── */
+              <div key={task.id} className="card" style={{
+                padding: '14px 16px',
+                display: 'flex', alignItems: 'center', gap: 12,
+                opacity: task.status === 'completed' ? 0.6 : 1,
+                transition: 'opacity 0.2s',
+              }}>
+                <button onClick={() => toggleStatus(task)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: task.status === 'completed' ? 'var(--emerald)' : 'var(--text-muted)', flexShrink: 0, padding: 0 }}>
+                  {task.status === 'completed' ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+                </button>
+
+                <div style={{ width: 4, height: 40, borderRadius: 2, backgroundColor: getSubjectColor(task.subjectId), flexShrink: 0, forcedColorAdjust: 'none' } as React.CSSProperties} />
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, textDecoration: task.status === 'completed' ? 'line-through' : 'none' }}>
+                      {task.title}
+                    </span>
+                    <span style={{ fontSize: 10, background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', padding: '1px 6px', borderRadius: 4 }}>
+                      {tType(task.type)}
+                    </span>
                   </div>
-                )}
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {getSubjectName(task.subjectId) && <span style={{ marginRight: 8 }}>📚 {getSubjectName(task.subjectId)}</span>}
-                  {task.estimatedMinutes && <span><Clock size={11} style={{ display: 'inline', marginRight: 3 }} />{task.estimatedMinutes}{t('tasks_minutes')}</span>}
+                  {task.description && (
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 500 }}>
+                      {task.description}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {getSubjectName(task.subjectId) && <span style={{ marginRight: 8 }}>📚 {getSubjectName(task.subjectId)}</span>}
+                    {task.estimatedMinutes && <span><Clock size={11} style={{ display: 'inline', marginRight: 3 }} />{task.estimatedMinutes}{t('tasks_minutes')}</span>}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <span className={getDueDateColor(task.dueDate)} style={{ fontSize: 12, minWidth: 90, textAlign: 'right' }}>
+                    {formatDueDate(task.dueDate)}
+                  </span>
+                  <span className={`badge ${PRIORITY_COLORS[task.priority]}`} style={{ fontSize: 10 }}>
+                    {tPriority(task.priority)}
+                  </span>
+                  <span className={`badge ${STATUS_COLORS[task.status]}`} style={{ fontSize: 10 }}>
+                    {tStatus(task.status)}
+                  </span>
+                  <button className="btn-ghost" onClick={() => openEdit(task)} style={{ padding: '4px 6px' }}>
+                    <Pencil size={14} />
+                  </button>
+                  <button className="btn-ghost" onClick={() => { if (confirm(t('tasks_confirm_delete'))) deleteTask(task.id) }} style={{ padding: '4px 6px', color: '#ef4444' }}>
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <span className={getDueDateColor(task.dueDate)} style={{ fontSize: 12, minWidth: 90, textAlign: 'right' }}>
-                  {formatDueDate(task.dueDate)}
-                </span>
-                <span className={`badge ${PRIORITY_COLORS[task.priority]}`} style={{ fontSize: 10 }}>
-                  {tPriority(task.priority)}
-                </span>
-                <span className={`badge ${STATUS_COLORS[task.status]}`} style={{ fontSize: 10 }}>
-                  {tStatus(task.status)}
-                </span>
-                <button className="btn-ghost" onClick={() => openEdit(task)} style={{ padding: '4px 6px' }}>
-                  <Pencil size={14} />
-                </button>
-                <button className="btn-ghost" onClick={() => { if (confirm(t('tasks_confirm_delete'))) deleteTask(task.id) }} style={{ padding: '4px 6px', color: '#ef4444' }}>
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
+            )
           ))}
         </div>
       )}
