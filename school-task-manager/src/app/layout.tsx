@@ -65,6 +65,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             height: 100% !important;
             forced-color-adjust: none !important;
           }
+          /* モバイル: カード・ガラス効果を完全無効化（HTML直書きなのでキャッシュ無関係） */
+          .is-mobile-ua .card,
+          .is-mobile-ua .has-bg .card,
+          .is-mobile-ua.has-bg .card { background: #282828 !important; }
+          .is-mobile-ua .card-2,
+          .is-mobile-ua .has-bg .card-2 { background: #303030 !important; }
+          .is-mobile-ua .stat-card,
+          .is-mobile-ua .has-bg .stat-card { background: #282828 !important; }
+          [data-theme="light"].is-mobile-ua .card,
+          [data-theme="light"].is-mobile-ua .has-bg .card { background: #ffffff !important; }
+          [data-theme="light"].is-mobile-ua .card-2 { background: #f8f9fc !important; }
+          [data-theme="light"].is-mobile-ua .stat-card { background: #ffffff !important; }
+          @media (max-width: 900px) {
+            .card, .has-bg .card { background: #282828 !important; }
+            .card-2, .has-bg .card-2 { background: #303030 !important; }
+            .stat-card { background: #282828 !important; }
+            [data-theme="light"] .card, [data-theme="light"] .has-bg .card { background: #ffffff !important; }
+            [data-theme="light"] .card-2 { background: #f8f9fc !important; }
+          }
         ` }} />
       </head>
       <body style={{ margin: 0, minHeight: '100vh' }}>
