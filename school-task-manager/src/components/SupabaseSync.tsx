@@ -33,6 +33,23 @@ export default function SupabaseSync() {
         if (d.language) s.setLanguage(d.language)
         if (d.freeNote !== undefined) s.updateFreeNote(d.freeNote)
         if (d.integrations) s.updateIntegrations(d.integrations)
+      } else {
+        // Supabaseが空 → PCのlocalStorageデータをSupabaseに書き込む
+        const s = useStore.getState()
+        const data = {
+          ...s.exportData(),
+          sidebarIcon: s.sidebarIcon,
+          bgImage: s.bgImage,
+          bgImageMobile: s.bgImageMobile,
+          bgPosition: s.bgPosition,
+          bgPositionMobile: s.bgPositionMobile,
+          language: s.language,
+          freeNote: s.freeNote,
+          integrations: s.integrations,
+        }
+        await supabase!
+          .from('app_state')
+          .upsert({ id: SYNC_KEY, data, updated_at: new Date().toISOString() })
       }
       initialized.current = true
     }
