@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useStore } from '@/lib/store'
 
@@ -8,37 +8,38 @@ const SIDEBAR_W = 220
 export default function BackgroundProvider() {
   const { bgImage, bgImageMobile, bgX, bgY, bgZoom } = useStore()
   const [isMobile, setIsMobile] = useState(false)
+  // effectiveImage は '' で始める → 初期レンダー時は背景なし（サーバー・クライアント共通）
+  const [effectiveImage, setEffectiveImage] = useState('')
   const pathname = usePathname()
-
-  // layout.tsx の beforeInteractive Script が付与したクラスを初回レンダー時に同期読み込み
-  // useState ではなく useRef で初期化することで hydration タイミング問題を回避
-  const isMobileUA = useRef(
-    typeof window !== 'undefined'
-      ? document.documentElement.classList.contains('is-mobile-ua')
-      : false
-  )
 
   useEffect(() => {
     document.documentElement.style.backgroundImage = ''
     document.documentElement.style.backgroundAttachment = ''
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
 
-  // モバイルUA では常に null（背景画像を一切描画しない）
-  const image = isMobileUA.current ? null : ((isMobile && bgImageMobile) ? bgImageMobile : bgImage)
+    const ua = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+    const widthCheck = () => {
+      const mob = window.innerWidth < 768
+      setIsMobile(mob)
+      // モバイルUA なら背景を一切表示しない
+      if (!ua) {
+        setEffectiveImage((mob && bgImageMobile) ? bgImageMobile : (bgImage ?? ''))
+      }
+      // モバイルUA の場合は effectiveImage = '' のまま → has-bg も付かない
+    }
+    widthCheck()
+    window.addEventListener('resize', widthCheck)
+    return () => window.removeEventListener('resize', widthCheck)
+  }, [bgImage, bgImageMobile])
 
   useEffect(() => {
-    if (image && pathname !== '/') {
+    if (effectiveImage && pathname !== '/') {
       document.documentElement.classList.add('has-bg')
     } else {
       document.documentElement.classList.remove('has-bg')
     }
-  }, [image, pathname])
+  }, [effectiveImage, pathname])
 
-  if (!image || pathname === '/') return null
+  if (!effectiveImage || pathname === '/') return null
 
   const left = isMobile ? 0 : SIDEBAR_W
   const width = isMobile ? '100%' : `calc(100% - ${SIDEBAR_W}px)`
@@ -50,7 +51,7 @@ export default function BackgroundProvider() {
         overflow: 'hidden', zIndex: 0, pointerEvents: 'none',
       }}>
         <img
-          src={image}
+          src={effectiveImage}
           alt=""
           draggable={false}
           style={{
