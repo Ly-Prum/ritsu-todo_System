@@ -4,6 +4,7 @@ import { useStore } from '@/lib/store'
 import { EVENT_TYPE_LABELS } from '@/lib/utils'
 import { CheckCircle2, Circle, AlertTriangle } from 'lucide-react'
 import GradientText from '@/components/GradientText'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 function DonutChart({ value, size = 188, strokeWidth = 18 }: { value: number; size?: number; strokeWidth?: number }) {
   const radius = (size - strokeWidth) / 2
@@ -47,6 +48,7 @@ function SectionLabel({ children, color = 'var(--emerald)' }: { children: React.
 
 export default function Dashboard() {
   const { tasks, events, subjects, updateTask, integrations } = useStore()
+  const isMobile = useIsMobile()
 
   const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
@@ -137,7 +139,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── タスクカード（最上部）── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 16 }}>
 
         {/* 今日の締切 */}
         <div className="card" style={{ padding: '12px 14px' }}>
@@ -211,7 +213,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── メイングリッド ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: 16, alignItems: 'start' }}>
 
         {/* ── 左カラム：ドーナツ ── */}
         <div className="card" style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
