@@ -8,6 +8,7 @@ import {
 import type { Task, Priority, TaskStatus, TaskType } from '@/lib/types'
 import { Plus, X, Pencil, Trash2, CheckCircle2, Circle, Clock, Filter, Search } from 'lucide-react'
 import { useT } from '@/hooks/useT'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 
 const emptyForm = {
@@ -118,6 +119,7 @@ export default function TasksPage() {
     setQuickDate('')
   }
 
+  const isMobile = useIsMobile()
   const getSubjectName = (id?: string) => subjects.find(s => s.id === id)?.name ?? ''
   const getSubjectColor = (id?: string) => subjects.find(s => s.id === id)?.color ?? '#8a92a6'
 
@@ -136,42 +138,89 @@ export default function TasksPage() {
       </div>
 
       {/* クイック追加バー */}
-      <div className="card" style={{ padding: '12px 16px', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0 }}>⚡ クイック追加</span>
-        <input
-          className="input"
-          placeholder="課題名を入力..."
-          value={quickTitle}
-          onChange={e => setQuickTitle(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && quickDateRef.current?.focus()}
-          style={{ flex: 2, minWidth: 180 }}
-        />
-        <select
-          className="input"
-          value={quickSubjectId}
-          onChange={e => setQuickSubjectId(e.target.value)}
-          style={{ flex: 1, minWidth: 120 }}
-        >
-          <option value="">科目（任意）</option>
-          {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-        <input
-          ref={quickDateRef}
-          className="input"
-          type="date"
-          value={quickDate}
-          onChange={e => setQuickDate(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && quickAdd()}
-          style={{ flex: 1, minWidth: 140 }}
-        />
-        <button
-          className="btn-primary"
-          onClick={quickAdd}
-          disabled={!quickTitle.trim()}
-          style={{ flexShrink: 0 }}
-        >
-          <Plus size={14} /> 追加
-        </button>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: 16 }}>
+        {isMobile ? (
+          <>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input
+                className="input"
+                placeholder="課題名を入力..."
+                value={quickTitle}
+                onChange={e => setQuickTitle(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && quickAdd()}
+                style={{ flex: 1 }}
+              />
+              <button
+                className="btn-primary"
+                onClick={quickAdd}
+                disabled={!quickTitle.trim()}
+                style={{ flexShrink: 0 }}
+              >
+                <Plus size={14} /> 追加
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select
+                className="input"
+                title="科目"
+                value={quickSubjectId}
+                onChange={e => setQuickSubjectId(e.target.value)}
+                style={{ flex: 1 }}
+              >
+                <option value="">科目（任意）</option>
+                {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+              <input
+                ref={quickDateRef}
+                className="input"
+                type="date"
+                title="期限日"
+                value={quickDate}
+                onChange={e => setQuickDate(e.target.value)}
+                style={{ flex: 1 }}
+              />
+            </div>
+          </>
+        ) : (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0 }}>⚡ クイック追加</span>
+            <input
+              className="input"
+              placeholder="課題名を入力..."
+              value={quickTitle}
+              onChange={e => setQuickTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && quickDateRef.current?.focus()}
+              style={{ flex: 2, minWidth: 180 }}
+            />
+            <select
+              className="input"
+              title="科目"
+              value={quickSubjectId}
+              onChange={e => setQuickSubjectId(e.target.value)}
+              style={{ flex: 1, minWidth: 120 }}
+            >
+              <option value="">科目（任意）</option>
+              {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            <input
+              ref={quickDateRef}
+              className="input"
+              type="date"
+              value={quickDate}
+              onChange={e => setQuickDate(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && quickAdd()}
+              style={{ flex: 1, minWidth: 140 }}
+            />
+            <button
+              className="btn-primary"
+              onClick={quickAdd}
+              disabled={!quickTitle.trim()}
+              style={{ flexShrink: 0 }}
+            >
+              <Plus size={14} /> 追加
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Date filter tabs */}
