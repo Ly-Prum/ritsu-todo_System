@@ -124,15 +124,15 @@ export default function TasksPage() {
   const getSubjectColor = (id?: string) => subjects.find(s => s.id === id)?.color ?? '#8a92a6'
 
   return (
-    <div style={{ padding: '16px 14px', maxWidth: 1600, width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>タスク管理</span>
-        <div style={{ display: 'flex', gap: 8 }}>
+    <div style={{ padding: isMobile ? '12px 10px' : '16px 14px', maxWidth: 1600, width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: isMobile ? 12 : 20 }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: isMobile ? '3px 10px' : '4px 14px', fontSize: isMobile ? 12 : 13, fontWeight: 700 }}>タスク管理</span>
+        <div style={{ display: 'flex', gap: 6 }}>
         <button className="btn-secondary" onClick={() => setShowSubjectForm(true)}>
-          <Plus size={14} /> {t('tasks_subject_add')}
+          <Plus size={12} /> {isMobile ? '科目' : t('tasks_subject_add')}
         </button>
         <button className="btn-primary" onClick={openNew}>
-          <Plus size={14} /> {t('tasks_add')}
+          <Plus size={12} /> {isMobile ? '追加' : t('tasks_add')}
         </button>
         </div>
       </div>
@@ -224,7 +224,7 @@ export default function TasksPage() {
       </div>
 
       {/* Date filter tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: isMobile ? 5 : 8, marginBottom: isMobile ? 8 : 12, flexWrap: 'wrap' }}>
         {([
           { value: 'all', label: t('tasks_filter_all') },
           { value: 'today', label: t('tasks_filter_today') },
@@ -236,7 +236,8 @@ export default function TasksPage() {
             key={value}
             onClick={() => setFilterDate(value)}
             style={{
-              padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+              padding: isMobile ? '4px 10px' : '6px 14px',
+              borderRadius: 20, fontSize: isMobile ? 11 : 12, fontWeight: 600,
               border: 'none', cursor: 'pointer',
               background: filterDate === value
                 ? 'linear-gradient(135deg, var(--emerald), var(--sky))'
@@ -250,7 +251,7 @@ export default function TasksPage() {
       </div>
 
       {/* Filters */}
-      <div className="card" style={{ padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="card" style={{ padding: isMobile ? '8px 10px' : '12px 16px', marginBottom: isMobile ? 12 : 20, display: 'flex', gap: isMobile ? 6 : 12, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 160 }}>
           <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input className="input" placeholder={t('lbl_search') + '...'} value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 32 }} />

@@ -130,10 +130,10 @@ export default function Dashboard() {
     <div style={{ padding: '16px 20px', width: '100%' }}>
 
       {/* ── ヘッダー ── */}
-      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'baseline', gap: 12 }}>
-        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: 13, fontWeight: 700 }}>ダッシュボード</span>
-        <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)' }}>Study Task Manager</div>
-        <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+      <div style={{ marginBottom: isMobile ? 12 : 16, display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+        <span style={{ background: 'linear-gradient(135deg, var(--emerald), var(--sky))', color: 'white', borderRadius: 8, padding: '4px 14px', fontSize: isMobile ? 12 : 13, fontWeight: 700 }}>ダッシュボード</span>
+        {!isMobile && <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)' }}>Study Task Manager</div>}
+        <span style={{ color: 'var(--text-faint)', fontSize: isMobile ? 12 : 13 }}>
           {today.getFullYear()}年{today.getMonth() + 1}月{today.getDate()}日（{DOW[today.getDay()]}）
         </span>
       </div>
@@ -216,15 +216,15 @@ export default function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: 16, alignItems: 'start' }}>
 
         {/* ── 左カラム：ドーナツ ── */}
-        <div className="card" style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="card" style={{ padding: isMobile ? '14px 12px' : '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ position: 'relative' }}>
-            <DonutChart value={completionRate} size={180} strokeWidth={16} />
+            <DonutChart value={completionRate} size={isMobile ? 130 : 180} strokeWidth={isMobile ? 13 : 16} />
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-              <div style={{ fontSize: 38, fontWeight: 900, lineHeight: 1 }}><GradientText>{completionRate}%</GradientText></div>
+              <div style={{ fontSize: isMobile ? 28 : 38, fontWeight: 900, lineHeight: 1 }}><GradientText>{completionRate}%</GradientText></div>
               <span style={{ fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>達成率</span>
             </div>
           </div>
-          <div style={{ marginTop: 14, display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-dim)' }}>
+          <div style={{ marginTop: 10, display: 'flex', gap: 14, fontSize: 12, color: 'var(--text-dim)' }}>
             <span>完了 <span style={{ color: 'var(--emerald-light)', fontWeight: 700 }}>{completedTasks.length}</span> 件</span>
             <span style={{ opacity: 0.3 }}>|</span>
             <span>未完了 <span style={{ color: 'var(--text-strong)', fontWeight: 700 }}>{tasks.length - completedTasks.length}</span> 件</span>

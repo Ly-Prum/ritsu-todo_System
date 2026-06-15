@@ -8,9 +8,11 @@ const SIDEBAR_W = 220
 export default function BackgroundProvider() {
   const { bgImage, bgImageMobile, bgX, bgY, bgZoom } = useStore()
   const [isMobile, setIsMobile] = useState(false)
+  const [isMobileUA, setIsMobileUA] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
+    setIsMobileUA(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
@@ -22,7 +24,8 @@ export default function BackgroundProvider() {
     document.documentElement.style.backgroundAttachment = ''
   }, [])
 
-  const image = (isMobile && bgImageMobile) ? bgImageMobile : bgImage
+  // モバイルUA では背景画像を表示しない
+  const image = isMobileUA ? null : ((isMobile && bgImageMobile) ? bgImageMobile : bgImage)
 
   useEffect(() => {
     if (image && pathname !== '/') {
@@ -39,7 +42,6 @@ export default function BackgroundProvider() {
 
   return (
     <>
-      {/* 背景画像ラッパー — サイドバー右側のみ */}
       <div style={{
         position: 'fixed', top: 0, left, width, height: '100%',
         overflow: 'hidden', zIndex: 0, pointerEvents: 'none',
@@ -61,8 +63,6 @@ export default function BackgroundProvider() {
           }}
         />
       </div>
-
-      {/* オーバーレイ — サイドバー右側のみ */}
       <div style={{
         position: 'fixed', top: 0, left, width, height: '100%',
         background: 'var(--overlay-bg)', zIndex: 1, pointerEvents: 'none',

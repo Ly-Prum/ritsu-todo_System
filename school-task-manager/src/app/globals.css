@@ -414,9 +414,26 @@ textarea.input { resize: vertical; min-height: 80px; font-family: inherit; }
 }
 
 @media (max-width: 767px) {
-  main { padding-bottom: 72px; padding-top: 52px; }
+  main { padding-bottom: 64px; padding-top: 48px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .main-grid { grid-template-columns: 1fr !important; }
   .hide-mobile { display: none !important; }
   .calendar-day { min-height: 52px; padding: 4px; }
+
+  /* フォント・ボタン縮小 */
+  body { font-size: 13px; }
+  .btn-primary  { padding: 5px 11px !important; font-size: 12px !important; }
+  .btn-secondary { padding: 5px 9px  !important; font-size: 12px !important; }
+  .btn-ghost    { padding: 3px 5px   !important; }
+  .input        { padding: 6px 10px  !important; font-size: 13px !important; }
+
+  /* カードを完全不透明（背景画像・ガラス無効化） */
+  .card        { background: #282828 !important; }
+  .card-2      { background: #303030 !important; }
+  .stat-card   { background: #282828 !important; }
+  .has-bg .card     { background: #282828 !important; }
+  .has-bg .card-2   { background: #303030 !important; }
+  [data-theme="light"] .card      { background: #ffffff !important; }
+  [data-theme="light"] .card-2    { background: #f8f9fc !important; }
+  [data-theme="light"] .stat-card { background: #ffffff !important; }
 }
